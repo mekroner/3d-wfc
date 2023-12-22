@@ -1,4 +1,19 @@
-use super::*;
+use std::collections::HashMap;
+use std::thread::current;
+use std::usize;
+
+use crate::Ground;
+
+use super::Tile;
+use super::{CHUNK_HIGHT, CHUNK_SIZE, CHUNK_VOLUME};
+use bevy::prelude::*;
+use rand::{thread_rng, Rng};
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
+
+use super::util::*;
+
+use WaveState::*;
 
 #[derive(Default, Hash, Eq, PartialEq, Debug, Clone)]
 pub struct ChunkId(IVec2);
@@ -35,25 +50,25 @@ impl ChunkId {
 
 pub struct Chunk {
     id: ChunkId,
-    tiles: Vec<Option<Tile>>,
+    tiles: Vec<Tile>,
 }
 
 impl Chunk {
     pub fn new(id: ChunkId) -> Self {
-        let mut tiles = vec![None; CHUNK_VOLUME];
+        let mut tiles = vec![Tile::Air; CHUNK_VOLUME];
         for x in 0..CHUNK_SIZE {
             for z in 0..CHUNK_SIZE {
-                tiles[get_index(x, 0, z)] = Some(Tile::Ground);
+                tiles[get_index(x, 0, z)] = Tile::Ground;
             }
         }
         Self { id, tiles }
     }
 
     pub fn id(&self) -> ChunkId {
-        self.id
+        self.id.clone()
     }
 
-    pub fn get_tile(&self, x: usize, y: usize, z: usize) -> Option<Tile> {
+    pub fn get_tile(&self, x: usize, y: usize, z: usize) -> Tile {
         self.tiles[get_index(x, y, z)]
     }
 
@@ -99,10 +114,24 @@ impl AdjacencyRules {
     }
 }
 
+#[derive(Debug, Clone)]
+enum WaveState {
+    Collapsed(Tile),
+    Superpos(Vec<Tile>),
+}
+
+impl WaveState {
+    fn is_collapsed(&self) -> bool {
+        match self {
+            Self::Collapsed(_) => true,
+            Self::Superpos(_) => false,
+        }
+    }
+}
+
 pub struct ChunkBuilder {
     id: ChunkId,
-    wave: Vec<Vec<Tile>>,
-    output: [Option<Tile>; CHUNK_VOLUME],
+    wave: Vec<WaveState>,
 
     rules: HashMap<Tile, AdjacencyRules>,
 }
@@ -111,12 +140,13 @@ impl Default for ChunkBuilder {
     fn default() -> Self {
         Self {
             id: ChunkId::default(),
-            wave: vec![Vec::new(); CHUNK_VOLUME],
-            output: [None; CHUNK_VOLUME],
+            wave: vec![],
             rules: HashMap::default(),
         }
     }
 }
+
+struct WaveError;
 
 impl ChunkBuilder {
     pub fn new(id: ChunkId) -> Self {
@@ -128,80 +158,124 @@ impl ChunkBuilder {
         self
     }
 
-    // pub fn add_tile_with_rotation(mut self, tile: TileType, rules: AdjacencyRules) -> Self {
-    //     todo!();
-    // }
-
     pub fn build(mut self) -> Chunk {
         self.init();
         while !self.is_collapsed() {
-            self.iterate();
+            if self.iterate().is_err() {
+                eprint!("WFC: Error");
+                break;
+            }
         }
 
+        // dbg!(&self.wave);
+
         let mut tiles: Vec<Tile> = Vec::new();
-        for tile in self.output {
-            if tile.is_none() {
-                panic!("wave function collapse should not fail");
-            }
-            tiles.push(tile.unwrap());
+        for wave_state in self.wave {
+            let Collapsed(tile) = wave_state else {
+                // panic!("wave function collapse should not fail");
+                tiles.push(Tile::Dbg);
+                
+                continue;
+            };
+            tiles.push(tile);
         }
+
         Chunk { id: self.id, tiles }
     }
 
     fn init(&mut self) {
         let tiles: Vec<Tile> = self.rules.keys().cloned().collect();
-        for list in self.wave.iter_mut() {
-            *list = tiles.clone();
-        }
+        self.wave = vec![Superpos(tiles.clone()); CHUNK_VOLUME];
+        self.wave[get_index(0,0,0)] = Collapsed(Tile::Ground);
+        self.propagate(get_index(0,0,0));
     }
 
-    fn iterate(&mut self) {
-        // eprintln!("WFC: ITERATE");
-        // find superposition with smallest entropy
+    // find superposition with lowest non zero entropy
+    fn lowest_entropy(&self) -> Option<usize> {
         let mut pos = None;
         let mut min = usize::MAX;
-        for (i, p) in self.wave.iter().enumerate() {
+        for (i, wave_state) in self.wave.iter().enumerate() {
+            let Superpos(p) = wave_state else {
+                continue;
+            };
             let entropy = p.len();
             if entropy != 0 && entropy < min {
                 min = entropy;
                 pos = Some(i);
             }
         }
-        let Some(pos) = pos else {
-            panic!("Wave function Collapse failed");
-        };
+        pos
+    }
 
-        // collapse superposition in random element
-        let superposition = &mut self.wave[pos];
-        let mut len = superposition.len();
-        if len > 1 && superposition.contains(&Tile::Air) {
-            let air = superposition.iter().position(|&t| t == Tile::Air).unwrap();
-            superposition.remove(air);
-            len -= 1;
-        }
+    // collapse superposition in random element
+    fn collapse(&mut self, pos: usize) -> Result<Tile, WaveError> {
+        let Superpos(superpos) = &mut self.wave[pos] else {
+            // panic!("WFC: Cannot Collapse an already collapsed element");
+            return Err(WaveError);
+        };
+        let len = superpos.len();
         let mut rng = rand::thread_rng();
         let index = rng.gen_range(0..len);
-        let tile = superposition[index];
-        superposition.clear();
-        // eprintln!("WFC: collapsed {:?} at {:?}", tile, from_index(pos));
-        self.output[pos] = Some(tile);
+        let tile = superpos[index];
+        superpos.clear();
+        self.wave[pos] = Collapsed(tile);
+        Ok(tile)
+    }
 
-        // propagate
-        for dir in Dir::iter() {
-            let Some(index) = self.neighbor(pos, dir) else {
-                // eprintln!("WFC: skip for {:?}", dir);
-                continue;
-            };
-            // eprintln!("WFC: propagate to {:?}", from_index(index));
-            let rule = self.rules[&tile].from_dir(dir);
-            let new_neigh = self.wave[index]
-                .iter()
-                .filter(|t| rule.contains(t))
-                .cloned()
-                .collect();
-            // eprintln!("WFC: update {:?} to {:?}", self.wave[index], new_neigh);
-            self.wave[index] = new_neigh;
+    // propagate the rules for a tile colapsed at pos
+    fn propagate(&mut self, pos: usize) {
+        let mut stack = Vec::new();
+        stack.push(pos);
+        while !stack.is_empty() {
+            let current_pos = stack.pop().unwrap();
+            for dir in Dir::iter() {
+                let Some(neighbor_pos) = self.neighbor(pos, dir) else {
+                    continue;
+                };
+                let Superpos(neighbor) = self.wave[neighbor_pos].clone() else {
+                    continue;
+                };
+                let allowed_neighbors: Vec<Tile> = match &self.wave[current_pos] {
+                    Collapsed(tile) => self.rules[tile].from_dir(dir).clone(),
+                    Superpos(list) => {
+                        let mut res = Vec::new();
+                        for tile in list {
+                            res.append(&mut self.rules[tile].from_dir(dir).clone());
+                        }
+                        res
+                    }
+                };
+
+                for tile in neighbor {
+                    if allowed_neighbors.contains(&tile) {
+                        continue;
+                    }
+
+                    // TODO remove tile from neighbors
+                    if let Superpos(n) = &mut self.wave[neighbor_pos] {
+                        let index = n.iter().position(|&i| i == tile).unwrap();
+                        n.remove(index);
+                    }
+
+                    if stack.contains(&neighbor_pos) {
+                        stack.push(neighbor_pos)
+                    }
+                }
+            }
         }
+    }
+
+    fn iterate(&mut self) -> Result<(), WaveError> {
+        eprintln!();
+        eprintln!("WFC: INTERATE");
+        let Some(pos) = self.lowest_entropy() else {
+            return Err(WaveError);
+        };
+
+        let tile = self.collapse(pos)?;
+        eprintln!("WFC: Collapse {:?} {:?}", from_index(pos), tile);
+        self.propagate(pos);
+        Ok(())
     }
 
     fn neighbor(&self, pos: usize, dir: Dir) -> Option<usize> {
@@ -236,8 +310,8 @@ impl ChunkBuilder {
     }
 
     fn is_collapsed(&self) -> bool {
-        for tile in self.output {
-            if tile.is_none() {
+        for wave_state in &self.wave {
+            if !wave_state.is_collapsed() {
                 return false;
             }
         }

@@ -1,25 +1,17 @@
 use bevy::gltf::Gltf;
 use bevy::prelude::*;
-use bevy::utils::dbg;
-use core::panic;
-use rand::Rng;
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::f32::consts::PI;
-use std::ops::Index;
 
-use strum::IntoEnumIterator;
-use strum_macros::EnumIter;
-
-mod util;
 mod chunk;
 mod tile;
+mod util;
+mod prototyper;
 
-use util::*;
 use chunk::*;
 use tile::*;
 
-const CHUNK_SIZE: usize = 16;
+const CHUNK_SIZE: usize = 24;
 const CHUNK_AREA: usize = CHUNK_SIZE * CHUNK_SIZE;
 const CHUNK_HIGHT: usize = 4;
 const CHUNK_VOLUME: usize = CHUNK_AREA * CHUNK_HIGHT;
@@ -42,16 +34,45 @@ impl Plugin for WorldGenerationPlugin {
                 Update,
                 spawn_chunks.run_if(in_state(TileLoadState::Finished)),
             )
-            .add_systems(Update, world_gizmo);
+            // .add_systems(Update, world_gizmo)
+            .add_systems(Update, grid_gizmo);
     }
 }
 
 fn world_gizmo(mut gizmos: Gizmos, world_map: Res<WorldMap>) {
-    // let offset = Vec3::new(TILE_SIZE / 2., 0.0, TILE_SIZE / 2.0);
     for (_, chunk) in world_map.chunks.iter() {
         // draw tiles
+        for z in 0..CHUNK_SIZE {
+            for x in 0..CHUNK_SIZE {
+                gizmos.rect(
+                    chunk.pos() + Vec3::new(x as f32, 0.0, z as f32),
+                    Quat::from_rotation_x(PI / 2.0),
+                    Vec2::splat(TILE_SIZE as f32),
+                    Color::YELLOW,
+                )
+            }
+        }
         gizmos.ray(chunk.pos(), Vec3::Y * 100.0, Color::WHITE);
     }
+}
+
+fn grid_gizmo(mut gizmos: Gizmos) {
+    for z in -50..50 {
+        for x in -50..50 {
+            gizmos.rect(
+                Vec3::new(x as f32, 0.0, z as f32),
+                Quat::from_rotation_x(PI / 2.0),
+                Vec2::splat(TILE_SIZE as f32),
+                Color::YELLOW,
+            )
+        }
+    }
+
+    // compas
+
+    gizmos.ray(Vec3::ZERO, Vec3::Y, Color::BLUE);
+    gizmos.ray(Vec3::ZERO, Vec3::X, Color::RED);
+    gizmos.ray(Vec3::ZERO, Vec3::Z, Color::GREEN);
 }
 
 fn spawn_chunks(
@@ -64,46 +85,79 @@ fn spawn_chunks(
     let mut chunks_to_spawn: Vec<ChunkId> = Vec::new();
     // for z in (-CHUNK_SPAWN_DISTANCE)..CHUNK_SPAWN_DISTANCE {
     //     for x in (-CHUNK_SPAWN_DISTANCE)..CHUNK_SPAWN_DISTANCE {
-            // let id = ChunkId::from_position(focus.pos).x_offset(x).z_offset(z);
-            let id = ChunkId::new(0,0);
+    // let id = ChunkId::from_position(focus.pos).x_offset(x).z_offset(z);
+    let id = ChunkId::new(0, 0);
 
-            if !world_map.contains(&id) {
-                chunks_to_spawn.push(id);
-            }
-        // }
+    if !world_map.contains(&id) {
+        chunks_to_spawn.push(id);
+    }
+    // }
     // }
 
     for id in &chunks_to_spawn {
+        let air_rules = AdjacencyRules {
+            p_x: vec![Tile::Air],
+            n_x: vec![Tile::Air],
+            p_y: vec![Tile::Air],
+            n_y: vec![Tile::Air, Tile::Ground, Tile::CliffUpper],
+            p_z: vec![Tile::Air],
+            n_z: vec![Tile::Air],
+        };
+
+        let solid_rules = AdjacencyRules {
+            p_x: vec![Tile::Solid],
+            n_x: vec![Tile::Solid],
+            p_y: vec![Tile::Solid, Tile::Ground, Tile::CliffLow],
+            n_y: vec![Tile::Solid],
+            p_z: vec![Tile::Solid],
+            n_z: vec![Tile::Solid],
+        };
+
         let ground_rules = AdjacencyRules {
             p_x: vec![Tile::Ground],
-            n_x: vec![Tile::Ground, ],
-            p_y: vec![],
-            n_y: vec![],
+            n_x: vec![Tile::Ground],
+            p_y: vec![Tile::Air],
+            n_y: vec![Tile::Solid],
             p_z: vec![Tile::Ground],
             n_z: vec![Tile::Ground],
         };
 
-        // let cliff_low_rules = AdjacencyRules {
-        //     p_x: vec![],
-        //     n_x: vec![Tile::Ground],
-        //     p_y: vec![],
-        //     n_y: vec![],
-        //     p_z: vec![Tile::CliffLow],
-        //     n_z: vec![Tile::CliffLow],
-        // };
+        let cliff_low_rules = AdjacencyRules {
+            p_x: vec![Tile::Solid],
+            n_x: vec![Tile::Ground],
+            p_y: vec![Tile::CliffUpper],
+            n_y: vec![Tile::Solid],
+            p_z: vec![Tile::CliffLow],
+            n_z: vec![Tile::CliffLow],
+        };
+
+        let cliff_upper_rules = AdjacencyRules {
+            p_x: vec![Tile::Ground],
+            n_x: vec![Tile::Ground],
+            p_y: vec![Tile::Air],
+            n_y: vec![Tile::Solid],
+            p_z: vec![Tile::CliffUpper],
+            n_z: vec![Tile::CliffUpper],
+        };
 
         let chunk = ChunkBuilder::new(id.clone())
+            .add_tile(Tile::Air, air_rules)
+            .add_tile(Tile::Solid, solid_rules)
             .add_tile(Tile::Ground, ground_rules)
-            // .add_tile(Tile::CliffLow, cliff_low_rules)
+            .add_tile(Tile::CliffLow, cliff_low_rules)
+            .add_tile(Tile::CliffUpper, cliff_upper_rules)
             // .add_tile(TileType::CliffLowCorner, cliff_low_corner_rules)
             .build();
 
-        let chunk = Chunk::new(id.clone());
+        // let chunk = Chunk::new(id.clone());
         for z in 0..CHUNK_SIZE {
             for x in 0..CHUNK_SIZE {
                 for y in 0..CHUNK_HIGHT {
-                    let Some(tile) = &chunk.get_tile(x, y, z) else {continue;};
-                    let gltf = assets_gltf.get(&tiles[&tile]).unwrap();
+                    let tile = &chunk.get_tile(x, y, z);
+                    let Some(handle) = tiles.get(*tile) else {
+                        continue;
+                    };
+                    let gltf = assets_gltf.get(handle).expect("Asset should be loaded");
                     let transform = Transform {
                         translation: chunk.pos() + Vec3::new(x as f32, y as f32, z as f32),
                         ..default()
@@ -112,8 +166,7 @@ fn spawn_chunks(
                         scene: gltf.scenes[0].clone(),
                         transform,
                         ..default()
-                    },
-                    ));
+                    },));
                 }
             }
         }
@@ -141,4 +194,3 @@ impl WorldMap {
         self.chunks.insert(chunk.id(), chunk);
     }
 }
-
