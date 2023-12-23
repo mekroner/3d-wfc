@@ -2,8 +2,6 @@ use std::collections::HashMap;
 use std::thread::current;
 use std::usize;
 
-use crate::Ground;
-
 use super::Tile;
 use super::{CHUNK_HIGHT, CHUNK_SIZE, CHUNK_VOLUME};
 use bevy::prelude::*;
@@ -251,7 +249,7 @@ impl ChunkBuilder {
                         continue;
                     }
 
-                    // TODO remove tile from neighbors
+                    // remove tile from neighbors
                     if let Superpos(n) = &mut self.wave[neighbor_pos] {
                         let index = n.iter().position(|&i| i == tile).unwrap();
                         n.remove(index);

@@ -1,11 +1,10 @@
-use std::ops::Index;
-
+use bevy::gltf::{Gltf, GltfMesh, GltfPrimitive};
 use bevy::prelude::*;
-use super::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Tile {
     Dbg,
+
     Air,
     Solid,
     Ground,
@@ -40,7 +39,6 @@ impl TileAssets {
     }
 }
 
-
 pub fn check_tiles_loaded(
     ass: Res<AssetServer>,
     tiles: Res<TileAssets>,
@@ -65,16 +63,38 @@ pub fn load_tiles(mut cmds: Commands, ass: Res<AssetServer>) {
     cmds.insert_resource(TileAssets(assets));
 }
 
-pub fn setup_tiles(mut commands: Commands, tiles: Res<TileAssets>, assets_gltf: Res<Assets<Gltf>>) {
+pub fn setup_tiles(
+    mut commands: Commands,
+    tiles: Res<TileAssets>,
+    assets_gltf: Res<Assets<Gltf>>,
+    assets_gltf_mesh: Res<Assets<GltfMesh>>,
+    assets_gltf_prim: Res<Assets<GltfMesh>>,
+) {
+    let max_rows = 3;
     for (i, tile) in tiles.0.iter().enumerate() {
-        let row = (2*i) as f32;
-        let col = 0 as f32;
-        if let Some(gltf) = assets_gltf.get(tile) {
-            commands.spawn(SceneBundle {
-                scene: gltf.scenes[0].clone(),
-                transform: Transform::from_xyz(row, 0., col),
-                ..default()
-            });
+        let row = 2.0 * (i / max_rows) as f32;
+        let col = 2.0 * (i % max_rows) as f32;
+        let Some(gltf) = assets_gltf.get(tile) else {
+            continue;
+        };
+        for mesh_handle in gltf.meshes {
+            let Some(gltf_mesh) = assets_gltf_mesh.get(mesh_handle) else {
+                continue;
+            };
+
+            for primitive in gltf_mesh.primitives {
+                let mesh_handle = primitive.mesh;
+                let Some(mesh) = assets_gltf_prim.get(mesh_handle) else {
+                    continue;
+                };
+                dbg!(mesh);
+            }
         }
+
+        commands.spawn(SceneBundle {
+            scene: gltf.scenes[0].clone(),
+            transform: Transform::from_xyz(row, 0., col),
+            ..default()
+        });
     }
 }

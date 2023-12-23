@@ -11,7 +11,7 @@ mod prototyper;
 use chunk::*;
 use tile::*;
 
-const CHUNK_SIZE: usize = 24;
+const CHUNK_SIZE: usize = 16;
 const CHUNK_AREA: usize = CHUNK_SIZE * CHUNK_SIZE;
 const CHUNK_HIGHT: usize = 4;
 const CHUNK_VOLUME: usize = CHUNK_AREA * CHUNK_HIGHT;
@@ -29,11 +29,11 @@ impl Plugin for WorldGenerationPlugin {
                 Update,
                 check_tiles_loaded.run_if(in_state(TileLoadState::Loading)),
             )
-            // .add_systems(OnEnter(TileLoadState::Finished), setup_tiles)
-            .add_systems(
-                Update,
-                spawn_chunks.run_if(in_state(TileLoadState::Finished)),
-            )
+            .add_systems(OnEnter(TileLoadState::Finished), setup_tiles)
+            // .add_systems(
+            //     Update,
+            //     spawn_chunks.run_if(in_state(TileLoadState::Finished)),
+            // )
             // .add_systems(Update, world_gizmo)
             .add_systems(Update, grid_gizmo);
     }
@@ -68,7 +68,7 @@ fn grid_gizmo(mut gizmos: Gizmos) {
         }
     }
 
-    // compas
+    // compass
 
     gizmos.ray(Vec3::ZERO, Vec3::Y, Color::BLUE);
     gizmos.ray(Vec3::ZERO, Vec3::X, Color::RED);
