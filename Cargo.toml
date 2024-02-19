@@ -13,6 +13,16 @@ opt-level = 1
 [profile.dev.package."*"]
 opt-level = 3
 
+[[bin]]
+name = "prototype_viewer"
+test = false
+bench = false
+
+[[bin]]
+name = "game"
+
+[lib]
+name = "utg"
 
 [dependencies]
 bevy = "0.12.1"

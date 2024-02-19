@@ -70,7 +70,7 @@ impl Default for KeyBindings {
 pub struct FlyCam;
 
 fn spawn_camera(mut cmds: Commands) {
-    let translation = Vec3::new(0.0, CAMERA_HEIGHT, 0.0);
+    let translation = Vec3::new(0.0, CAMERA_HEIGHT, 10.0);
 
     cmds.spawn((
         Camera3dBundle {
