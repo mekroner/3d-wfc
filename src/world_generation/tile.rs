@@ -1,68 +1,118 @@
-// use bevy::gltf::{Gltf, GltfMesh, GltfPrimitive};
-// use bevy::prelude::*;
-// use bevy::render::mesh::{VertexAttributeDescriptor, VertexAttributeValues};
-// use bevy::utils::HashMap;
-// use strum::IntoEnumIterator;
-// use strum_macros::EnumIter;
+use bevy::gltf::Gltf;
+use bevy::prelude::*;
+use bevy::utils::HashMap;
+use strum_macros::EnumIter;
 
-// #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, EnumIter)]
-// pub enum Tile {
-//     Dbg,
+use crate::world_generation::Socket;
 
-//     Air,
-//     Solid,
-//     Ground,
-//     CliffLow,
-//     CliffLowCorner,
-//     CliffUpper,
-//     CliffUpperCorner,
-// }
+use super::Prototypes;
 
-// #[derive(States, Default, Clone, Copy, Debug, Eq, PartialEq, Hash)]
-// pub enum TileLoadState {
-//     #[default]
-//     Loading,
-//     Finished,
-// }
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Tile{
+    pub id: TileID,
+    pub asset_handle: Handle<Gltf>,
+}
 
-// #[derive(Resource)]
-// pub struct TileAssets(Vec<Handle<Gltf>>);
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TileID(pub u32);
 
-// impl TileAssets {
-//     pub fn get(&self, index: Tile) -> Option<&Handle<Gltf>> {
-//         match index {
-//             Tile::Dbg => None,
-//             Tile::Air => None,
-//             Tile::Solid => None,
-//             Tile::Ground => Some(&self.0[0]),
-//             Tile::CliffLow => Some(&self.0[1]),
-//             Tile::CliffLowCorner => Some(&self.0[2]),
-//             Tile::CliffUpper => Some(&self.0[3]),
-//             Tile::CliffUpperCorner => todo!(),
-//         }
-//     }
-// }
+#[derive(Resource)]
+pub struct Tiles(pub HashMap<TileID, Tile>);
 
-// pub fn check_tiles_loaded(
-//     ass: Res<AssetServer>,
-//     tiles: Res<TileAssets>,
-//     mut next_state: ResMut<NextState<TileLoadState>>,
-// ) {
-//     for tile in &tiles.0 {
-//         if ass.get_load_state(tile).is_none() {
-//             debug!("not all tiles loaded!");
-//             return;
-//         }
-//     }
-//     debug!("Tiles loaded!");
-//     next_state.set(TileLoadState::Finished);
-// }
+#[derive(EnumIter, Debug, PartialEq, Eq, Clone, Copy)]
+pub enum Dir {
+    Forward,  //-Z
+    Backward, //Z
+    Left,     // -X
+    Right,    // X
+    Up,       // Y
+    Down,     // -Y
+}
 
-// pub fn load_tiles(mut cmds: Commands, ass: Res<AssetServer>) {
-//     let ground = ass.load("models/terrain/ground.glb");
-//     let cliff_low = ass.load("models/terrain/cliff_low.glb");
-//     let cliff_low_corner = ass.load("models/terrain/cliff_low_corner.glb");
-//     let cliff_upper = ass.load("models/terrain/cliff_upper.glb");
-//     let assets = vec![ground, cliff_low, cliff_low_corner, cliff_upper];
-//     cmds.insert_resource(TileAssets(assets));
-// }
+impl Dir {
+    pub fn to_vec3(self) -> Vec3 {
+        match self {
+            Dir::Forward => -Vec3::Z,
+            Dir::Backward => Vec3::Z,
+            Dir::Left => -Vec3::X,
+            Dir::Right => Vec3::X,
+            Dir::Up => Vec3::Y,
+            Dir::Down => -Vec3::Y,
+        }
+    }
+}
+
+pub struct AdjacencyRules {
+    pub p_x: Vec<TileID>,
+    pub n_x: Vec<TileID>,
+    pub p_y: Vec<TileID>,
+    pub n_y: Vec<TileID>,
+    pub p_z: Vec<TileID>,
+    pub n_z: Vec<TileID>,
+}
+
+impl AdjacencyRules {
+    pub fn from_dir(&self, dir: Dir) -> &Vec<TileID> {
+        match dir {
+            Dir::Forward => &self.n_z,
+            Dir::Backward => &self.p_z,
+            Dir::Left => &self.n_x,
+            Dir::Right => &self.p_x,
+            Dir::Up => &self.p_y,
+            Dir::Down => &self.n_y,
+        }
+    }
+}
+
+#[derive(Resource)]
+pub struct AdjRuleSet(pub HashMap<TileID, AdjacencyRules>);
+
+pub fn generate_tiles_and_rules(prototypes: Res<Prototypes>, mut tiles: ResMut<Tiles>, mut rule_set: ResMut<AdjRuleSet>) {
+    let mut id = 0;
+    for prototype in prototypes.0.iter() {
+        info!("New Tile: {}", prototype.name);
+        let new_tile = Tile {
+            id: TileID(id),
+            asset_handle: prototype.asset_handle.clone(),
+        };
+        tiles.0.insert(TileID(id), new_tile);
+        let mut rule = AdjacencyRules {
+            p_x: vec![],
+            n_x: vec![],
+            p_y: vec![],
+            n_y: vec![],
+            p_z: vec![],
+            n_z: vec![],
+        };
+        let mut other_id = 0;
+        for other_prt in prototypes.0.iter() {
+            if prototype.p_x == other_prt.n_x && prototype.p_x != Socket(0){
+                info!("New p_x Rule: {} connects to {}", prototype.name, other_prt.name);
+                rule.p_x.push(TileID(other_id));
+            }
+            if prototype.n_x == other_prt.p_x && prototype.n_x != Socket(0){
+                info!("New n_x Rule: {} connects to {}", prototype.name, other_prt.name);
+                rule.n_x.push(TileID(other_id));
+            }
+            if prototype.p_y == other_prt.n_y && prototype.p_y != Socket(0){
+                info!("New p_y Rule: {} connects to {}", prototype.name, other_prt.name);
+                rule.p_y.push(TileID(other_id));
+            }
+            if prototype.n_y == other_prt.p_y && prototype.n_y != Socket(0){
+                info!("New n_y Rule: {} connects to {}", prototype.name, other_prt.name);
+                rule.n_y.push(TileID(other_id));
+            }
+            if prototype.p_z == other_prt.n_z && prototype.p_z != Socket(0){
+                info!("New p_z Rule: {} connects to {}", prototype.name, other_prt.name);
+                rule.p_z.push(TileID(other_id));
+            }
+            if prototype.n_z == other_prt.p_z && prototype.n_z != Socket(0){
+                info!("New n_z Rule: {} connects to {}", prototype.name, other_prt.name);
+                rule.n_z.push(TileID(other_id));
+            }
+            other_id += 1;
+        }
+        rule_set.0.insert(TileID(id), rule);
+        id += 1;
+    }
+}

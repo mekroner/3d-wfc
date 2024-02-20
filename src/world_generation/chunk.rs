@@ -1,116 +1,82 @@
-// use std::collections::HashMap;
-// use std::thread::current;
-// use std::usize;
+use std::usize;
 
-// use super::Tile;
-// use super::{CHUNK_HIGHT, CHUNK_SIZE, CHUNK_VOLUME};
-// use bevy::prelude::*;
-// use rand::{thread_rng, Rng};
-// use strum::IntoEnumIterator;
-// use strum_macros::EnumIter;
+use super::{Tile, TileID};
+use super::{CHUNK_SIZE, CHUNK_VOLUME};
+use bevy::prelude::*;
+use strum_macros::EnumIter;
 
-// use super::util::*;
+use super::util::*;
 
 // use WaveState::*;
 
-// #[derive(Default, Hash, Eq, PartialEq, Debug, Clone)]
-// pub struct ChunkId(IVec2);
+#[derive(Default, Hash, Eq, PartialEq, Debug, Clone)]
+pub struct ChunkId(IVec2);
 
-// impl ChunkId {
-//     pub fn new(x: i32, z: i32) -> Self {
-//         Self(IVec2::new(x, z))
-//     }
+impl ChunkId {
+    pub fn new(x: i32, z: i32) -> Self {
+        Self(IVec2::new(x, z))
+    }
 
-//     pub fn x(&self) -> i32 {
-//         self.0.x
-//     }
+    pub fn x(&self) -> i32 {
+        self.0.x
+    }
 
-//     pub fn z(&self) -> i32 {
-//         self.0.y
-//     }
+    pub fn z(&self) -> i32 {
+        self.0.y
+    }
 
-//     pub fn from_position(pos: Vec3) -> Self {
-//         let x = (pos.x / CHUNK_SIZE as f32).floor() as i32;
-//         let z = (pos.z / CHUNK_SIZE as f32).floor() as i32;
-//         Self::new(x, z)
-//     }
+    pub fn from_position(pos: Vec3) -> Self {
+        let x = (pos.x / CHUNK_SIZE as f32).floor() as i32;
+        let z = (pos.z / CHUNK_SIZE as f32).floor() as i32;
+        Self::new(x, z)
+    }
 
-//     pub fn x_offset(mut self, offset: i32) -> Self {
-//         self.0.x += offset;
-//         self
-//     }
+    pub fn x_offset(mut self, offset: i32) -> Self {
+        self.0.x += offset;
+        self
+    }
 
-//     pub fn z_offset(mut self, offset: i32) -> Self {
-//         self.0.y += offset;
-//         self
-//     }
-// }
+    pub fn z_offset(mut self, offset: i32) -> Self {
+        self.0.y += offset;
+        self
+    }
+}
 
-// pub struct Chunk {
-//     id: ChunkId,
-//     tiles: Vec<Tile>,
-// }
+pub struct Chunk {
+    id: ChunkId,
+    tiles: Vec<Option<Tile>>,
+}
 
-// impl Chunk {
-//     pub fn new(id: ChunkId) -> Self {
-//         let mut tiles = vec![Tile::Air; CHUNK_VOLUME];
-//         for x in 0..CHUNK_SIZE {
-//             for z in 0..CHUNK_SIZE {
-//                 tiles[get_index(x, 0, z)] = Tile::Ground;
-//             }
-//         }
-//         Self { id, tiles }
-//     }
+impl Chunk {
+    pub fn new(id: ChunkId, ground: Option<Tile>) -> Self {
+        let mut tiles = vec![None; CHUNK_VOLUME];
+        for x in 0..CHUNK_SIZE {
+            for z in 0..CHUNK_SIZE {
+                tiles[get_index(x, 0, z)] = ground.clone();
+            }
+        }
+        Self { id, tiles }
+    }
 
-//     pub fn id(&self) -> ChunkId {
-//         self.id.clone()
-//     }
+    pub fn id(&self) -> ChunkId {
+        self.id.clone()
+    }
 
-//     pub fn get_tile(&self, x: usize, y: usize, z: usize) -> Tile {
-//         self.tiles[get_index(x, y, z)]
-//     }
+    pub fn get_tile(&self, x: usize, y: usize, z: usize) -> Option<&Tile> {
+        self.tiles[get_index(x, y, z)].as_ref()
+    }
 
-//     pub fn pos(&self) -> Vec3 {
-//         let x = self.id.x() as f32;
-//         let z = self.id.z() as f32;
-//         let size = CHUNK_SIZE as f32;
-//         Vec3::new(x, 0.0, z) * size
-//     }
-// }
+    pub fn pos(&self) -> Vec3 {
+        let x = self.id.x() as f32;
+        let z = self.id.z() as f32;
+        let size = CHUNK_SIZE as f32;
+        Vec3::new(x, 0.0, z) * size
+    }
+}
 
-// #[derive(EnumIter, Debug, PartialEq, Eq, Clone, Copy)]
-// enum Dir {
-//     Forward,  //-Z
-//     Backward, //Z
-//     Left,     // -X
-//     Right,    // X
-//     Up,       // Y
-//     Down,     // -Y
-// }
 
-// // Chunk Generatorion
+// Chunk Generatorion
 
-// pub struct AdjacencyRules {
-//     pub p_x: Vec<Tile>,
-//     pub n_x: Vec<Tile>,
-//     pub p_y: Vec<Tile>,
-//     pub n_y: Vec<Tile>,
-//     pub p_z: Vec<Tile>,
-//     pub n_z: Vec<Tile>,
-// }
-
-// impl AdjacencyRules {
-//     fn from_dir(&self, dir: Dir) -> &Vec<Tile> {
-//         match dir {
-//             Dir::Forward => &self.n_z,
-//             Dir::Backward => &self.p_z,
-//             Dir::Left => &self.n_x,
-//             Dir::Right => &self.p_x,
-//             Dir::Up => &self.p_y,
-//             Dir::Down => &self.n_y,
-//         }
-//     }
-// }
 
 // #[derive(Debug, Clone)]
 // enum WaveState {
@@ -172,7 +138,7 @@
 //             let Collapsed(tile) = wave_state else {
 //                 // panic!("wave function collapse should not fail");
 //                 tiles.push(Tile::Dbg);
-                
+
 //                 continue;
 //             };
 //             tiles.push(tile);
@@ -184,8 +150,8 @@
 //     fn init(&mut self) {
 //         let tiles: Vec<Tile> = self.rules.keys().cloned().collect();
 //         self.wave = vec![Superpos(tiles.clone()); CHUNK_VOLUME];
-//         self.wave[get_index(0,0,0)] = Collapsed(Tile::Ground);
-//         self.propagate(get_index(0,0,0));
+//         self.wave[get_index(0, 0, 0)] = Collapsed(Tile::Ground);
+//         self.propagate(get_index(0, 0, 0));
 //     }
 
 //     // find superposition with lowest non zero entropy

@@ -24,7 +24,7 @@ fn main() {
                     ..default()
                 })
                 .set(bevy::log::LogPlugin {
-                    level: bevy::log::Level::DEBUG,
+                    // level: bevy::log::Level::DEBUG,
                     ..default()
                 }),
         )
