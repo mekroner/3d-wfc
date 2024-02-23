@@ -6,6 +6,7 @@ use bevy::gltf::Gltf;
 
 // use super::tile::Tile;
 
+#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
 pub enum Rotation {
     Zero,
     Quarter,

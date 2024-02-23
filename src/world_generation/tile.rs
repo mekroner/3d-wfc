@@ -5,12 +5,13 @@ use strum_macros::EnumIter;
 
 use crate::world_generation::Socket;
 
-use super::Prototypes;
+use super::{prototype, Prototype, Prototypes, Rotation};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Tile{
+pub struct Tile {
     pub id: TileID,
     pub asset_handle: Handle<Gltf>,
+    pub y_rotation: Rotation,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -67,13 +68,18 @@ impl AdjacencyRules {
 #[derive(Resource)]
 pub struct AdjRuleSet(pub HashMap<TileID, AdjacencyRules>);
 
-pub fn generate_tiles_and_rules(prototypes: Res<Prototypes>, mut tiles: ResMut<Tiles>, mut rule_set: ResMut<AdjRuleSet>) {
+pub fn generate_tiles_and_rules(
+    prototypes: Res<Prototypes>,
+    mut tiles: ResMut<Tiles>,
+    mut rule_set: ResMut<AdjRuleSet>,
+) {
     let mut id = 0;
     for prototype in prototypes.0.iter() {
         info!("New Tile: {}", prototype.name);
         let new_tile = Tile {
             id: TileID(id),
             asset_handle: prototype.asset_handle.clone(),
+            y_rotation: Rotation::Zero,
         };
         tiles.0.insert(TileID(id), new_tile);
         let mut rule = AdjacencyRules {
@@ -86,33 +92,55 @@ pub fn generate_tiles_and_rules(prototypes: Res<Prototypes>, mut tiles: ResMut<T
         };
         let mut other_id = 0;
         for other_prt in prototypes.0.iter() {
-            if prototype.p_x == other_prt.n_x && prototype.p_x != Socket::NIL{
-                info!("New p_x Rule: {} connects to {}", prototype.name, other_prt.name);
-                rule.p_x.push(TileID(other_id));
-            }
-            if prototype.n_x == other_prt.p_x && prototype.n_x != Socket::NIL{
-                info!("New n_x Rule: {} connects to {}", prototype.name, other_prt.name);
-                rule.n_x.push(TileID(other_id));
-            }
-            if prototype.p_y == other_prt.n_y && prototype.p_y != Socket::NIL{
-                info!("New p_y Rule: {} connects to {}", prototype.name, other_prt.name);
-                rule.p_y.push(TileID(other_id));
-            }
-            if prototype.n_y == other_prt.p_y && prototype.n_y != Socket::NIL{
-                info!("New n_y Rule: {} connects to {}", prototype.name, other_prt.name);
-                rule.n_y.push(TileID(other_id));
-            }
-            if prototype.p_z == other_prt.n_z && prototype.p_z != Socket::NIL{
-                info!("New p_z Rule: {} connects to {}", prototype.name, other_prt.name);
-                rule.p_z.push(TileID(other_id));
-            }
-            if prototype.n_z == other_prt.p_z && prototype.n_z != Socket::NIL{
-                info!("New n_z Rule: {} connects to {}", prototype.name, other_prt.name);
-                rule.n_z.push(TileID(other_id));
-            }
+            add_rule(prototype, other_prt, &mut rule, other_id);
             other_id += 1;
         }
         rule_set.0.insert(TileID(id), rule);
         id += 1;
+    }
+}
+
+fn add_rule(prototype: &Prototype, other_prt: &Prototype, rule: &mut AdjacencyRules, id: u32) {
+    if prototype.p_x == other_prt.n_x && prototype.p_x != Socket::NIL {
+        info!(
+            "New p_x Rule: {} connects to {}",
+            prototype.name, other_prt.name
+        );
+        rule.p_x.push(TileID(id));
+    }
+    if prototype.n_x == other_prt.p_x && prototype.n_x != Socket::NIL {
+        info!(
+            "New n_x Rule: {} connects to {}",
+            prototype.name, other_prt.name
+        );
+        rule.n_x.push(TileID(id));
+    }
+    if prototype.p_y == other_prt.n_y && prototype.p_y != Socket::NIL {
+        info!(
+            "New p_y Rule: {} connects to {}",
+            prototype.name, other_prt.name
+        );
+        rule.p_y.push(TileID(id));
+    }
+    if prototype.n_y == other_prt.p_y && prototype.n_y != Socket::NIL {
+        info!(
+            "New n_y Rule: {} connects to {}",
+            prototype.name, other_prt.name
+        );
+        rule.n_y.push(TileID(id));
+    }
+    if prototype.p_z == other_prt.n_z && prototype.p_z != Socket::NIL {
+        info!(
+            "New p_z Rule: {} connects to {}",
+            prototype.name, other_prt.name
+        );
+        rule.p_z.push(TileID(id));
+    }
+    if prototype.n_z == other_prt.p_z && prototype.n_z != Socket::NIL {
+        info!(
+            "New n_z Rule: {} connects to {}",
+            prototype.name, other_prt.name
+        );
+        rule.n_z.push(TileID(id));
     }
 }
