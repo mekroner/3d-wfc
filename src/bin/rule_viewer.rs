@@ -11,7 +11,7 @@ use utg::world_generation::prototype::*;
 use utg::world_generation::tile::*;
 use utg::world_generation::TILE_SIZE;
 
-const DISPLAY_AREA_SIZE: f32 = 3. * TILE_SIZE;
+const DISPLAY_AREA_SIZE: f32 = 4. * TILE_SIZE;
 
 fn main() {
     use PrototypesLoadState as PLS;
@@ -86,7 +86,7 @@ fn spawn_rule_examples(
     assets_gltf: Res<Assets<Gltf>>,
 ) {
     let num_of_display_areas: usize = rule_set.0.iter().map(|(_, rule)| rule.len() ).sum(); 
-    info!("num of display areas: {}", num_of_display_areas);
+    let max_row_size = (num_of_display_areas as f32).sqrt().ceil() as usize;
     let mut index = 0;
     for (id, rule) in rule_set.0.iter() {
         let tile = tiles.0.get(id).unwrap();
@@ -95,7 +95,9 @@ fn spawn_rule_examples(
 
         for dir in Dir::iter() {
             for other_id in rule.from_dir(dir) {
-                let pos = Vec3::new(index as f32 * DISPLAY_AREA_SIZE, 0.5, 0.);
+                let x = (index / max_row_size) as f32;
+                let z = (index % max_row_size) as f32;
+                let pos = Vec3::new(x * DISPLAY_AREA_SIZE, 0., z * DISPLAY_AREA_SIZE);
                 let other_pos = pos + dir.to_vec3() * TILE_SIZE;
                 let other_tile = tiles.0.get(other_id).unwrap();
                 let other_handle = &other_tile.asset_handle;
