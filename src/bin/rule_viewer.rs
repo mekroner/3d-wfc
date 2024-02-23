@@ -85,7 +85,8 @@ fn spawn_rule_examples(
     tiles: Res<Tiles>,
     assets_gltf: Res<Assets<Gltf>>,
 ) {
-    // let grid_dim = (prts.0.len() as f32).sqrt().floor().into();
+    let num_of_display_areas: usize = rule_set.0.iter().map(|(_, rule)| rule.len() ).sum(); 
+    info!("num of display areas: {}", num_of_display_areas);
     let mut index = 0;
     for (id, rule) in rule_set.0.iter() {
         let tile = tiles.0.get(id).unwrap();

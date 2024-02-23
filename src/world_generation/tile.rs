@@ -5,7 +5,7 @@ use strum_macros::EnumIter;
 
 use crate::world_generation::Socket;
 
-use super::{prototype, Prototype, Prototypes, Rotation};
+use super::{Prototype, Prototypes, Rotation};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Tile {
@@ -62,6 +62,12 @@ impl AdjacencyRules {
             Dir::Up => &self.p_y,
             Dir::Down => &self.n_y,
         }
+    }
+
+    pub fn len(&self) -> usize {
+        self.p_x.len() + self.n_x.len() +
+        self.p_y.len() + self.n_y.len() +
+        self.p_z.len() + self.n_z.len()
     }
 }
 
