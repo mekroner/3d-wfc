@@ -16,6 +16,10 @@ pub enum Rotation {
 #[derive(Hash, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct Socket(pub u32);
 
+impl Socket {
+    pub const NIL: Self = Self(0);
+}
+
 pub struct Prototype {
     pub name: &'static str,
     pub asset_handle: Handle<Gltf>,
@@ -45,8 +49,8 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         asset_handle: ground,
         p_x: Socket(1),
         n_x: Socket(1),
-        p_y: Socket(0),
-        n_y: Socket(0),
+        p_y: Socket::NIL,
+        n_y: Socket::NIL,
         p_z: Socket(1),
         n_z: Socket(1),
         frequency: 0,
@@ -55,10 +59,10 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
     let cliff_low_prt = Prototype {
         name: "cliff_low",
         asset_handle: cliff_low,
-        p_x: Socket(0),
+        p_x: Socket::NIL,
         n_x: Socket(1),
         p_y: Socket(2),
-        n_y: Socket(0),
+        n_y: Socket::NIL,
         p_z: Socket(3),
         n_z: Socket(3),
         frequency: 0,
@@ -67,10 +71,10 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
     let cliff_low_corner_prt = Prototype {
         name: "cliff_low_corner",
         asset_handle: cliff_low_corner,
-        p_x: Socket(0),
+        p_x: Socket::NIL,
         n_x: Socket(1),
-        p_y: Socket(0),
-        n_y: Socket(0),
+        p_y: Socket::NIL,
+        n_y: Socket::NIL,
         p_z: Socket(1),
         n_z: Socket(3),
         frequency: 0,
@@ -80,23 +84,23 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         name: "cliff_upper",
         asset_handle: cliff_upper,
         p_x: Socket(1),
-        n_x: Socket(0),
-        p_y: Socket(0),
+        n_x: Socket::NIL,
+        p_y: Socket::NIL,
         n_y: Socket(2),
-        p_z: Socket(0),
-        n_z: Socket(0),
+        p_z: Socket::NIL,
+        n_z: Socket::NIL,
         frequency: 0,
     };
 
     let cliff_upper_corner_prt = Prototype {
         name: "cliff_upper_corner",
         asset_handle: cliff_upper_corner,
-        p_x: Socket(0),
-        n_x: Socket(0),
-        p_y: Socket(0),
-        n_y: Socket(0),
-        p_z: Socket(0),
-        n_z: Socket(0),
+        p_x: Socket::NIL,
+        n_x: Socket::NIL,
+        p_y: Socket::NIL,
+        n_y: Socket::NIL,
+        p_z: Socket::NIL,
+        n_z: Socket::NIL,
         frequency: 0,
     };
 

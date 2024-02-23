@@ -86,27 +86,27 @@ pub fn generate_tiles_and_rules(prototypes: Res<Prototypes>, mut tiles: ResMut<T
         };
         let mut other_id = 0;
         for other_prt in prototypes.0.iter() {
-            if prototype.p_x == other_prt.n_x && prototype.p_x != Socket(0){
+            if prototype.p_x == other_prt.n_x && prototype.p_x != Socket::NIL{
                 info!("New p_x Rule: {} connects to {}", prototype.name, other_prt.name);
                 rule.p_x.push(TileID(other_id));
             }
-            if prototype.n_x == other_prt.p_x && prototype.n_x != Socket(0){
+            if prototype.n_x == other_prt.p_x && prototype.n_x != Socket::NIL{
                 info!("New n_x Rule: {} connects to {}", prototype.name, other_prt.name);
                 rule.n_x.push(TileID(other_id));
             }
-            if prototype.p_y == other_prt.n_y && prototype.p_y != Socket(0){
+            if prototype.p_y == other_prt.n_y && prototype.p_y != Socket::NIL{
                 info!("New p_y Rule: {} connects to {}", prototype.name, other_prt.name);
                 rule.p_y.push(TileID(other_id));
             }
-            if prototype.n_y == other_prt.p_y && prototype.n_y != Socket(0){
+            if prototype.n_y == other_prt.p_y && prototype.n_y != Socket::NIL{
                 info!("New n_y Rule: {} connects to {}", prototype.name, other_prt.name);
                 rule.n_y.push(TileID(other_id));
             }
-            if prototype.p_z == other_prt.n_z && prototype.p_z != Socket(0){
+            if prototype.p_z == other_prt.n_z && prototype.p_z != Socket::NIL{
                 info!("New p_z Rule: {} connects to {}", prototype.name, other_prt.name);
                 rule.p_z.push(TileID(other_id));
             }
-            if prototype.n_z == other_prt.p_z && prototype.n_z != Socket(0){
+            if prototype.n_z == other_prt.p_z && prototype.n_z != Socket::NIL{
                 info!("New n_z Rule: {} connects to {}", prototype.name, other_prt.name);
                 rule.n_z.push(TileID(other_id));
             }
