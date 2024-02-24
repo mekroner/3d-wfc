@@ -7,6 +7,7 @@ use strum::IntoEnumIterator;
 
 use utg::fly_camera::FlyCam;
 use utg::fly_camera::FlyCamPlugin;
+use utg::world_generation::dir::Dir;
 use utg::world_generation::prototype::*;
 use utg::world_generation::tile::*;
 use utg::world_generation::TILE_SIZE;
@@ -58,15 +59,18 @@ struct Light;
 fn spawn_light(mut commands: Commands) {
     let trnsfrm = Transform::from_xyz(0.0, 10.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y);
 
-    commands.spawn((PointLightBundle {
-        point_light: PointLight {
-            intensity: 1000.0,
-            range: 100.0,
+    commands.spawn((
+        PointLightBundle {
+            point_light: PointLight {
+                intensity: 1000.0,
+                range: 100.0,
+                ..default()
+            },
+            transform: trnsfrm,
             ..default()
         },
-        transform: trnsfrm,
-        ..default()
-    }, Light));
+        Light,
+    ));
 }
 
 fn tie_light_to_cam(
@@ -85,7 +89,8 @@ fn spawn_rule_examples(
     tiles: Res<Tiles>,
     assets_gltf: Res<Assets<Gltf>>,
 ) {
-    let num_of_display_areas: usize = rule_set.0.iter().map(|(_, rule)| rule.len() ).sum(); 
+    let num_of_display_areas: usize = rule_set.0.iter().map(|(_, rule)| rule.len()).sum();
+    info!("Showing a total of {} rules!", num_of_display_areas);
     let max_row_size = (num_of_display_areas as f32).sqrt().ceil() as usize;
     let mut index = 0;
     for (id, rule) in rule_set.0.iter() {
@@ -106,10 +111,12 @@ fn spawn_rule_examples(
                     .expect("Asset should be loaded");
                 let transform = Transform {
                     translation: pos,
+                    rotation: tile.y_rotation.to_quat(),
                     ..default()
                 };
                 let other_transform = Transform {
                     translation: other_pos,
+                    rotation: other_tile.y_rotation.to_quat(),
                     ..default()
                 };
                 let _entity = cmds.spawn(SceneBundle {
@@ -129,8 +136,8 @@ fn spawn_rule_examples(
 }
 
 fn grid_gizmo(mut gizmos: Gizmos) {
-    for z in -50..50 {
-        for x in -50..50 {
+    for z in 0..50 {
+        for x in 0..50 {
             gizmos.rect(
                 Vec3::new(x as f32, 0.0, z as f32),
                 Quat::from_rotation_x(PI / 2.0),

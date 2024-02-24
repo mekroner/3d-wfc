@@ -7,6 +7,7 @@ pub mod chunk;
 pub mod prototype;
 pub mod tile;
 pub mod util;
+pub mod dir;
 
 use chunk::*;
 use prototype::*;

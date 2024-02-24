@@ -1,24 +1,35 @@
 // This first analizes the tileset, it defines sockets, as well as the which side is up and which
 // side is down
-
-use bevy::prelude::*;
 use bevy::gltf::Gltf;
+use bevy::prelude::*;
 
-// use super::tile::Tile;
-
-#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
-pub enum Rotation {
-    Zero,
-    Quarter,
-    Half,
-    ThreeQuarter
-}
+use super::dir::Dir;
 
 #[derive(Hash, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub struct Socket(pub u32);
+pub struct Socket {
+    pub id: u16,
+    pub symmetrical: bool,
+}
 
 impl Socket {
-    pub const NIL: Self = Self(0);
+    pub const NIL: Self = Self {
+        id: 0,
+        symmetrical: true,
+    };
+
+    const fn sym(id: u16) -> Self {
+        Self {
+            id,
+            symmetrical: true,
+        }
+    }
+
+    const fn unsym(id: u16) -> Self {
+        Self {
+            id,
+            symmetrical: false,
+        }
+    }
 }
 
 pub struct Prototype {
@@ -34,6 +45,18 @@ pub struct Prototype {
     pub frequency: u32,
 }
 
+impl Prototype {
+    pub fn socket_from_dir(&self, dir: Dir) -> Socket {
+        match dir {
+            Dir::Forward => self.n_z,
+            Dir::Backward => self.p_z,
+            Dir::Left => self.n_x,
+            Dir::Right => self.p_x,
+            Dir::Up => self.p_y,
+            Dir::Down => self.n_y,
+        }
+    }
+}
 
 #[derive(Resource)]
 pub struct Prototypes(pub Vec<Prototype>);
@@ -48,12 +71,12 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
     let ground_prt = Prototype {
         name: "ground",
         asset_handle: ground,
-        p_x: Socket(1),
-        n_x: Socket(1),
+        p_x: Socket::sym(1),
+        n_x: Socket::sym(1),
         p_y: Socket::NIL,
         n_y: Socket::NIL,
-        p_z: Socket(1),
-        n_z: Socket(1),
+        p_z: Socket::sym(1),
+        n_z: Socket::sym(1),
         frequency: 0,
     };
 
@@ -61,11 +84,11 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         name: "cliff_low",
         asset_handle: cliff_low,
         p_x: Socket::NIL,
-        n_x: Socket(1),
-        p_y: Socket(2),
+        n_x: Socket::unsym(1),
+        p_y: Socket::unsym(2),
         n_y: Socket::NIL,
-        p_z: Socket(3),
-        n_z: Socket(3),
+        p_z: Socket::unsym(3),
+        n_z: Socket::unsym(3),
         frequency: 0,
     };
 
@@ -73,21 +96,21 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         name: "cliff_low_corner",
         asset_handle: cliff_low_corner,
         p_x: Socket::NIL,
-        n_x: Socket(1),
+        n_x: Socket::sym(1),
         p_y: Socket::NIL,
         n_y: Socket::NIL,
-        p_z: Socket(1),
-        n_z: Socket(3),
+        p_z: Socket::sym(1),
+        n_z: Socket::unsym(3),
         frequency: 0,
     };
 
     let cliff_upper_prt = Prototype {
         name: "cliff_upper",
         asset_handle: cliff_upper,
-        p_x: Socket(1),
+        p_x: Socket::sym(1),
         n_x: Socket::NIL,
         p_y: Socket::NIL,
-        n_y: Socket(2),
+        n_y: Socket::unsym(2),
         p_z: Socket::NIL,
         n_z: Socket::NIL,
         frequency: 0,
