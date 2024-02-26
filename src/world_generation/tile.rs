@@ -117,9 +117,6 @@ fn append_rule(
     id: u32,
 ) {
     for dir in Dir::iter() {
-        if (dir == Dir::Up || dir == Dir::Down) && rotation != other_rotation {
-            continue;
-        }
         let rot_dir = dir.rotate_y(rotation);
         let other_rot_dir = dir.rotate_y(other_rotation).opposite();
         let sock = prototype.socket_from_dir(rot_dir);
