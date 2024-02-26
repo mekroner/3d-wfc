@@ -133,7 +133,6 @@ fn append_rule(
             (0, _, _, _) | (_, _, 0, _) => (),
             (id0, true, id1, true) if id0 == id1 => {
                 rule.from_dir_mut(dir).push(TileID(id));
-                // info!("Compared Sock {:?} with {:?}", sock, other_sock);
                 info!(
                     "new rule: {} with {:?} rotation connects to {} with {:?} rotation",
                     prototype.name, rotation, other_prt.name, other_rotation

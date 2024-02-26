@@ -93,7 +93,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         p_z: Socket::unsym(3),
         n_z: Socket::unsym(3),
         frequency: 0,
-        y_rotations: vec![Rotation::Zero],
+        y_rotations: vec![Rotation::Zero, Rotation::Half, Rotation::Quarter, Rotation::ThreeQuarter],
     };
 
     let cliff_low_corner_prt = Prototype {
@@ -106,7 +106,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         p_z: Socket::sym(1),
         n_z: Socket::unsym(3),
         frequency: 0,
-        y_rotations: vec![Rotation::Zero],
+        y_rotations: vec![Rotation::Zero, Rotation::Half, Rotation::Quarter, Rotation::ThreeQuarter],
     };
 
     let cliff_upper_prt = Prototype {
