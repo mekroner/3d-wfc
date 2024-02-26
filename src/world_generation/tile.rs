@@ -20,6 +20,7 @@ pub struct TileID(pub u32);
 #[derive(Resource)]
 pub struct Tiles(pub HashMap<TileID, Tile>);
 
+#[derive(Clone)]
 pub struct AdjacencyRules {
     pub p_x: Vec<TileID>,
     pub n_x: Vec<TileID>,
@@ -62,7 +63,7 @@ impl AdjacencyRules {
     }
 }
 
-#[derive(Resource)]
+#[derive(Resource, Clone)]
 pub struct AdjRuleSet(pub HashMap<TileID, AdjacencyRules>);
 
 pub fn generate_tiles_and_rules(

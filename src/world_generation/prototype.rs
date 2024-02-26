@@ -56,8 +56,8 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         asset_handle: ground,
         p_x: Socket::Sym(1),
         n_x: Socket::Sym(1),
-        p_y: Socket::Nil,
-        n_y: Socket::Nil,
+        p_y: Socket::Asym(5),
+        n_y: Socket::Asym(5),
         p_z: Socket::Sym(1),
         n_z: Socket::Sym(1),
         frequency: 0,
@@ -67,10 +67,10 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
     let cliff_low_prt = Prototype {
         name: "cliff_low",
         asset_handle: cliff_low,
-        p_x: Socket::Nil,
+        p_x: Socket::Asym(5),
         n_x: Socket::Sym(1),
         p_y: Socket::Vert(2),
-        n_y: Socket::Nil,
+        n_y: Socket::Asym(5),
         p_z: Socket::Asym(3),
         n_z: Socket::AsymMir(3),
         frequency: 0,
@@ -82,8 +82,8 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         asset_handle: cliff_low_corner,
         p_x: Socket::Asym(3),
         n_x: Socket::Sym(1),
-        p_y: Socket::Nil,
-        n_y: Socket::Nil,
+        p_y: Socket::Vert(3),
+        n_y: Socket::Asym(5),
         p_z: Socket::Sym(1),
         n_z: Socket::AsymMir(3),
         frequency: 0,
@@ -94,8 +94,8 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         name: "cliff_upper",
         asset_handle: cliff_upper,
         p_x: Socket::Sym(1),
-        n_x: Socket::Nil,
-        p_y: Socket::Nil,
+        n_x: Socket::Asym(5),
+        p_y: Socket::Asym(5),
         n_y: Socket::Vert(2),
         p_z: Socket::Asym(4),
         n_z: Socket::AsymMir(4),
@@ -105,7 +105,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
 
     let cliff_upper_corner_prt = Prototype {
         name: "cliff_upper_corner",
-        asset_handle: cliff_upper_corner,
+        asset_handle: cliff_upper_corner.clone(),
         p_x: Socket::Nil,
         n_x: Socket::Nil,
         p_y: Socket::Nil,
@@ -113,15 +113,29 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         p_z: Socket::Nil,
         n_z: Socket::Nil,
         frequency: 0,
+        y_rotations: vec![Rotation::Zero, Rotation::Half, Rotation::Quarter, Rotation::ThreeQuarter],
+    };
+
+    let nil_prt = Prototype {
+        name: "cliff_upper_corner",
+        asset_handle: cliff_upper_corner,
+        p_x: Socket::AsymMir(5),
+        n_x: Socket::AsymMir(5),
+        p_y: Socket::AsymMir(5),
+        n_y: Socket::AsymMir(5),
+        p_z: Socket::AsymMir(5),
+        n_z: Socket::AsymMir(5),
+        frequency: 0,
         y_rotations: vec![Rotation::Zero],
     };
 
     let assets = vec![
         ground_prt,
         cliff_low_prt,
-        cliff_low_corner_prt,
         cliff_upper_prt,
+        cliff_low_corner_prt,
         cliff_upper_corner_prt,
+        nil_prt,
     ];
     cmds.insert_resource(Prototypes(assets));
 }

@@ -99,7 +99,6 @@ fn spawn_rule_examples(
         let gltf = assets_gltf.get(handle).expect("Asset should be loaded");
 
         for dir in Dir::iter() {
-            // info!("Rule is {} len for dir {:?}", rule.from_dir(dir).len(), dir);
             for other_id in rule.from_dir(dir) {
                 let x = (index / max_row_size) as f32;
                 let z = (index % max_row_size) as f32;

@@ -4,10 +4,10 @@ use bevy::utils::hashbrown::HashMap;
 use std::f32::consts::PI;
 
 pub mod chunk;
+pub mod dir;
 pub mod prototype;
 pub mod tile;
 pub mod util;
-pub mod dir;
 
 use chunk::*;
 use prototype::*;
@@ -33,6 +33,7 @@ impl Plugin for WorldGenerationPlugin {
                 check_prototypes_loaded.run_if(in_state(PLS::Loading)),
             )
             .insert_resource(Tiles(HashMap::new()))
+            .insert_resource(AdjRuleSet(HashMap::new()))
             .add_systems(OnEnter(PLS::Finished), generate_tiles_and_rules)
             .add_systems(Update, spawn_chunks.run_if(in_state(PLS::Finished)))
             // .add_systems(Update, world_gizmo)
@@ -76,36 +77,47 @@ pub fn grid_gizmo(mut gizmos: Gizmos) {
     gizmos.ray(Vec3::ZERO, Vec3::Z, Color::GREEN);
 }
 
-
 fn spawn_chunks(
     mut world_map: ResMut<WorldMap>,
     assets_gltf: Res<Assets<Gltf>>,
     tiles: Res<Tiles>,
+    rule_set: Res<AdjRuleSet>,
     mut cmds: Commands,
     focus: Res<WorldFocusPoint>,
 ) {
     let mut chunks_to_spawn: Vec<ChunkId> = Vec::new();
-    for z in (-CHUNK_SPAWN_DISTANCE)..CHUNK_SPAWN_DISTANCE {
-        for x in (-CHUNK_SPAWN_DISTANCE)..CHUNK_SPAWN_DISTANCE {
-            let id = ChunkId::from_position(focus.pos).x_offset(x).z_offset(z);
-            if !world_map.contains(&id) {
-                chunks_to_spawn.push(id);
-            }
-        }
+    // for z in (-CHUNK_SPAWN_DISTANCE)..CHUNK_SPAWN_DISTANCE {
+    //     for x in (-CHUNK_SPAWN_DISTANCE)..CHUNK_SPAWN_DISTANCE {
+    //         let id = ChunkId::from_position(focus.pos).x_offset(x).z_offset(z);
+    //         if !world_map.contains(&id) {
+    //             chunks_to_spawn.push(id);
+    //         }
+    //     }
+    // }
+    let id = ChunkId::new(0, 0);
+    if !world_map.contains(&id) {
+        chunks_to_spawn.push(id);
     }
 
     for id in &chunks_to_spawn {
-        let chunk = Chunk::new(id.clone(), Some(tiles.0[&TileID(0)].clone()));
+        // let chunk = Chunk::new(id.clone(), Some(TileID(0)));
+        let chunk = ChunkBuilder::new(id.clone())
+            .add_rule_set(rule_set.clone())
+            .build();
         for z in 0..CHUNK_SIZE {
             for x in 0..CHUNK_SIZE {
                 for y in 0..CHUNK_HIGHT {
-                    let Some(tile) = &chunk.get_tile(x, y, z) else {
+                    let Some(tile_id) = &chunk.get_tile(x, y, z) else {
+                        continue;
+                    };
+                    let Some(tile) = tiles.0.get(tile_id) else {
                         continue;
                     };
                     let handle = &tile.asset_handle;
                     let gltf = assets_gltf.get(handle).expect("Asset should be loaded");
                     let transform = Transform {
                         translation: chunk.pos() + Vec3::new(x as f32, y as f32, z as f32),
+                        rotation: tile.y_rotation.to_quat(),
                         ..default()
                     };
                     let _entity = cmds.spawn((SceneBundle {
