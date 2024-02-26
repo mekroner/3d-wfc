@@ -117,28 +117,38 @@ fn append_rule(
     id: u32,
 ) {
     for dir in Dir::iter() {
-        if dir == Dir::Up || dir == Dir::Down {
+        if (dir == Dir::Up || dir == Dir::Down) && rotation != other_rotation {
             continue;
         }
         let rot_dir = dir.rotate_y(rotation);
         let other_rot_dir = dir.rotate_y(other_rotation).opposite();
         let sock = prototype.socket_from_dir(rot_dir);
         let other_sock = other_prt.socket_from_dir(other_rot_dir);
-        match (
-            sock.id,
-            sock.symmetrical,
-            other_sock.id,
-            other_sock.symmetrical,
-        ) {
-            (0, _, _, _) | (_, _, 0, _) => (),
-            (id0, true, id1, true) if id0 == id1 => {
+        use Socket as S;
+        match (sock, other_sock) {
+            (S::Nil, _) | (_, S::Nil) => (),
+            (S::Sym(id0), S::Sym(id1)) if id0 == id1 => {
+                rule.from_dir_mut(dir).push(TileID(id));
+                info!(
+                    "new rule: {} with {:?} rotation connects to {} with {:?} rotation",
+                    prototype.name, rotation, other_prt.name, other_rotation
+                );
+            },
+            (S::Asym(id0), S::AsymMir(id1)) | (S::AsymMir(id0), S::Asym(id1)) if id0 == id1 => {
                 rule.from_dir_mut(dir).push(TileID(id));
                 info!(
                     "new rule: {} with {:?} rotation connects to {} with {:?} rotation",
                     prototype.name, rotation, other_prt.name, other_rotation
                 );
             }
-            (_, _, _, _) => (),
+            (S::Vert(id0), S::Vert(id1)) if id0 == id1 && rotation == other_rotation => {
+                rule.from_dir_mut(dir).push(TileID(id));
+                info!(
+                    "new rule: {} with {:?} rotation connects to {} with {:?} rotation",
+                    prototype.name, rotation, other_prt.name, other_rotation
+                );
+            }
+            (_, _) => (),
         }
     }
 }

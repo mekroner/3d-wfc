@@ -90,7 +90,7 @@ fn spawn_prototypes_in_grid(
 struct SocketColors(HashMap<Socket, Color>);
 
 fn determine_socket_color(prts: Res<Prototypes>, mut colors: ResMut<SocketColors>) {
-    colors.0.insert(Socket::NIL, Color::BLACK);
+    colors.0.insert(Socket::Nil, Color::BLACK);
     for prt in prts.0.iter() {
         if !colors.0.contains_key(&prt.p_x) {
             colors.0.insert(prt.p_x, random_color());
@@ -173,66 +173,6 @@ fn display_colored_sockets(mut gizmos: Gizmos, prts: Res<Prototypes>, colors: Re
             Vec2::splat(TILE_SIZE as f32 * 0.9),
             colors.0[&prt.n_z],
         );
-
-        if prt.p_y.symmetrical {
-            // positive Y
-            gizmos.rect(
-                pos + Vec3::Y * 0.5,
-                Quat::from_rotation_x(PI / 2.0),
-                Vec2::splat(TILE_SIZE as f32 * 0.8),
-                colors.0[&prt.p_y],
-            );
-        }
-
-        if prt.n_y.symmetrical {
-            // negative Y
-            gizmos.rect(
-                pos - Vec3::Y * 0.5,
-                Quat::from_rotation_x(PI / 2.0),
-                Vec2::splat(TILE_SIZE as f32 * 0.8),
-                colors.0[&prt.n_y],
-            );
-        }
-
-        if prt.p_x.symmetrical {
-            // positive X
-            gizmos.rect(
-                pos + Vec3::X * 0.5,
-                Quat::from_rotation_y(PI / 2.0),
-                Vec2::splat(TILE_SIZE as f32 * 0.8),
-                colors.0[&prt.p_x],
-            );
-        }
-
-        if prt.n_x.symmetrical {
-            // negative X
-            gizmos.rect(
-                pos - Vec3::X * 0.5,
-                Quat::from_rotation_y(PI / 2.0),
-                Vec2::splat(TILE_SIZE as f32 * 0.8),
-                colors.0[&prt.n_x],
-            );
-        }
-
-        if prt.p_z.symmetrical {
-            // positive Z
-            gizmos.rect(
-                pos + Vec3::Z * 0.5,
-                Quat::from_rotation_x(0.0),
-                Vec2::splat(TILE_SIZE as f32 * 0.8),
-                colors.0[&prt.p_z],
-            );
-        }
-
-        if prt.n_z.symmetrical {
-            // negative Z
-            gizmos.rect(
-                pos - Vec3::Z * 0.5,
-                Quat::from_rotation_x(0.0),
-                Vec2::splat(TILE_SIZE as f32 * 0.8),
-                colors.0[&prt.n_z],
-            );
-        }
     }
 }
 

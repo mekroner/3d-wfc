@@ -6,32 +6,13 @@ use bevy::prelude::*;
 use super::dir::{Dir, Rotation};
 
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub struct Socket {
-    pub id: u16,
-    pub symmetrical: bool,
+pub enum Socket {
+    Nil,
+    Sym(u16),
+    Asym(u16),
+    AsymMir(u16),
+    Vert(u16),
 }
-
-impl Socket {
-    pub const NIL: Self = Self {
-        id: 0,
-        symmetrical: true,
-    };
-
-    const fn sym(id: u16) -> Self {
-        Self {
-            id,
-            symmetrical: true,
-        }
-    }
-
-    const fn unsym(id: u16) -> Self {
-        Self {
-            id,
-            symmetrical: false,
-        }
-    }
-}
-
 pub struct Prototype {
     pub name: &'static str,
     pub asset_handle: Handle<Gltf>,
@@ -73,12 +54,12 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
     let ground_prt = Prototype {
         name: "ground",
         asset_handle: ground,
-        p_x: Socket::sym(1),
-        n_x: Socket::sym(1),
-        p_y: Socket::NIL,
-        n_y: Socket::NIL,
-        p_z: Socket::sym(1),
-        n_z: Socket::sym(1),
+        p_x: Socket::Sym(1),
+        n_x: Socket::Sym(1),
+        p_y: Socket::Nil,
+        n_y: Socket::Nil,
+        p_z: Socket::Sym(1),
+        n_z: Socket::Sym(1),
         frequency: 0,
         y_rotations: vec![Rotation::Zero],
     };
@@ -86,12 +67,12 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
     let cliff_low_prt = Prototype {
         name: "cliff_low",
         asset_handle: cliff_low,
-        p_x: Socket::NIL,
-        n_x: Socket::sym(1),
-        p_y: Socket::unsym(2),
-        n_y: Socket::NIL,
-        p_z: Socket::unsym(3),
-        n_z: Socket::unsym(3),
+        p_x: Socket::Nil,
+        n_x: Socket::Sym(1),
+        p_y: Socket::Vert(2),
+        n_y: Socket::Nil,
+        p_z: Socket::Asym(3),
+        n_z: Socket::AsymMir(3),
         frequency: 0,
         y_rotations: vec![Rotation::Zero, Rotation::Half, Rotation::Quarter, Rotation::ThreeQuarter],
     };
@@ -99,12 +80,12 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
     let cliff_low_corner_prt = Prototype {
         name: "cliff_low_corner",
         asset_handle: cliff_low_corner,
-        p_x: Socket::NIL,
-        n_x: Socket::sym(1),
-        p_y: Socket::NIL,
-        n_y: Socket::NIL,
-        p_z: Socket::sym(1),
-        n_z: Socket::unsym(3),
+        p_x: Socket::Asym(3),
+        n_x: Socket::Sym(1),
+        p_y: Socket::Nil,
+        n_y: Socket::Nil,
+        p_z: Socket::Sym(1),
+        n_z: Socket::AsymMir(3),
         frequency: 0,
         y_rotations: vec![Rotation::Zero, Rotation::Half, Rotation::Quarter, Rotation::ThreeQuarter],
     };
@@ -112,25 +93,25 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
     let cliff_upper_prt = Prototype {
         name: "cliff_upper",
         asset_handle: cliff_upper,
-        p_x: Socket::sym(1),
-        n_x: Socket::NIL,
-        p_y: Socket::NIL,
-        n_y: Socket::unsym(2),
-        p_z: Socket::NIL,
-        n_z: Socket::NIL,
+        p_x: Socket::Sym(1),
+        n_x: Socket::Nil,
+        p_y: Socket::Nil,
+        n_y: Socket::Vert(2),
+        p_z: Socket::Asym(4),
+        n_z: Socket::AsymMir(4),
         frequency: 0,
-        y_rotations: vec![Rotation::Zero],
+        y_rotations: vec![Rotation::Zero, Rotation::Half, Rotation::Quarter, Rotation::ThreeQuarter],
     };
 
     let cliff_upper_corner_prt = Prototype {
         name: "cliff_upper_corner",
         asset_handle: cliff_upper_corner,
-        p_x: Socket::NIL,
-        n_x: Socket::NIL,
-        p_y: Socket::NIL,
-        n_y: Socket::NIL,
-        p_z: Socket::NIL,
-        n_z: Socket::NIL,
+        p_x: Socket::Nil,
+        n_x: Socket::Nil,
+        p_y: Socket::Nil,
+        n_y: Socket::Nil,
+        p_z: Socket::Nil,
+        n_z: Socket::Nil,
         frequency: 0,
         y_rotations: vec![Rotation::Zero],
     };
