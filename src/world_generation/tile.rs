@@ -5,7 +5,7 @@ use strum::IntoEnumIterator;
 
 use crate::world_generation::Socket;
 
-use super::{Prototype, Prototypes, dir::Rotation, dir::Dir};
+use super::{dir::Dir, dir::Rotation, Prototype, Prototypes};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Tile {
@@ -122,12 +122,24 @@ fn append_rule(
         }
         let rot_dir = dir.rotate_y(rotation);
         let other_rot_dir = dir.rotate_y(other_rotation).opposite();
-        let socket_is_not_nil = prototype.socket_from_dir(rot_dir) != Socket::NIL;
-        let has_connection =
-            prototype.socket_from_dir(rot_dir) == other_prt.socket_from_dir(other_rot_dir);
-        if socket_is_not_nil && has_connection {
-            rule.from_dir_mut(rot_dir).push(TileID(id));
+        let sock = prototype.socket_from_dir(rot_dir);
+        let other_sock = other_prt.socket_from_dir(other_rot_dir);
+        match (
+            sock.id,
+            sock.symmetrical,
+            other_sock.id,
+            other_sock.symmetrical,
+        ) {
+            (0, _, _, _) | (_, _, 0, _) => (),
+            (id0, true, id1, true) if id0 == id1 => {
+                rule.from_dir_mut(dir).push(TileID(id));
+                // info!("Compared Sock {:?} with {:?}", sock, other_sock);
+                info!(
+                    "new rule: {} with {:?} rotation connects to {} with {:?} rotation",
+                    prototype.name, rotation, other_prt.name, other_rotation
+                );
+            }
+            (_, _, _, _) => (),
         }
     }
 }
-

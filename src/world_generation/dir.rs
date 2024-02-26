@@ -73,9 +73,9 @@ impl Rotation {
     pub fn to_quat(&self) -> Quat {
         match self {
             Rotation::Zero => Quat::from_rotation_y(0.0),
-            Rotation::Quarter => Quat::from_rotation_y(PI/2.0),
-            Rotation::Half => Quat::from_rotation_y(PI),
-            Rotation::ThreeQuarter => Quat::from_rotation_y(3.0*PI/2.0),
+            Rotation::Quarter => Quat::from_rotation_y(-PI/2.0),
+            Rotation::Half => Quat::from_rotation_y(-PI),
+            Rotation::ThreeQuarter => Quat::from_rotation_y(-3.0*PI/2.0),
         }
     }
 }

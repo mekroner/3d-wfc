@@ -5,7 +5,7 @@ use bevy::prelude::*;
 
 use super::dir::Dir;
 
-#[derive(Hash, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct Socket {
     pub id: u16,
     pub symmetrical: bool,
@@ -84,7 +84,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         name: "cliff_low",
         asset_handle: cliff_low,
         p_x: Socket::NIL,
-        n_x: Socket::unsym(1),
+        n_x: Socket::sym(1),
         p_y: Socket::unsym(2),
         n_y: Socket::NIL,
         p_z: Socket::unsym(3),
