@@ -3,7 +3,7 @@
 use bevy::gltf::Gltf;
 use bevy::prelude::*;
 
-use super::dir::Dir;
+use super::dir::{Dir, Rotation};
 
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct Socket {
@@ -43,6 +43,8 @@ pub struct Prototype {
     pub n_z: Socket,
 
     pub frequency: u32,
+
+    pub y_rotations: Vec<Rotation>,
 }
 
 impl Prototype {
@@ -78,6 +80,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         p_z: Socket::sym(1),
         n_z: Socket::sym(1),
         frequency: 0,
+        y_rotations: vec![Rotation::Zero],
     };
 
     let cliff_low_prt = Prototype {
@@ -90,6 +93,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         p_z: Socket::unsym(3),
         n_z: Socket::unsym(3),
         frequency: 0,
+        y_rotations: vec![Rotation::Zero],
     };
 
     let cliff_low_corner_prt = Prototype {
@@ -102,6 +106,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         p_z: Socket::sym(1),
         n_z: Socket::unsym(3),
         frequency: 0,
+        y_rotations: vec![Rotation::Zero],
     };
 
     let cliff_upper_prt = Prototype {
@@ -114,6 +119,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         p_z: Socket::NIL,
         n_z: Socket::NIL,
         frequency: 0,
+        y_rotations: vec![Rotation::Zero],
     };
 
     let cliff_upper_corner_prt = Prototype {
@@ -126,6 +132,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         p_z: Socket::NIL,
         n_z: Socket::NIL,
         frequency: 0,
+        y_rotations: vec![Rotation::Zero],
     };
 
     let assets = vec![

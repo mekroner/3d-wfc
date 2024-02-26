@@ -72,7 +72,7 @@ pub fn generate_tiles_and_rules(
 ) {
     let mut id = 0;
     for prototype in prototypes.0.iter() {
-        for rotation in Rotation::iter() {
+        for &rotation in &prototype.y_rotations {
             info!("New Tile: {} with rotation {:?}", prototype.name, rotation);
             let new_tile = Tile {
                 id: TileID(id),
@@ -90,7 +90,7 @@ pub fn generate_tiles_and_rules(
             };
             let mut other_id = 0;
             for other_prt in prototypes.0.iter() {
-                for other_rotation in Rotation::iter() {
+                for &other_rotation in &other_prt.y_rotations {
                     append_rule(
                         prototype,
                         rotation,
