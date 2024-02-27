@@ -72,7 +72,9 @@ fn spawn_prototypes_in_grid(
     // let grid_dim = (prts.0.len() as f32).sqrt().floor().into();
     for (i, prt) in prts.0.iter().enumerate() {
         let pos = Vec3::new(i as f32 * TILE_SIZE * 2., 0.5, 0.);
-        let handle = &prt.asset_handle;
+        let Some(handle) = &prt.asset_handle else {
+            continue;
+        };
         let gltf = assets_gltf.get(handle).expect("Asset should be loaded");
         let transform = Transform {
             translation: pos,

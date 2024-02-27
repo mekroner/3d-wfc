@@ -10,7 +10,7 @@ use super::{dir::Dir, dir::Rotation, Prototype, Prototypes};
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Tile {
     pub id: TileID,
-    pub asset_handle: Handle<Gltf>,
+    pub asset_handle: Option<Handle<Gltf>>,
     pub y_rotation: Rotation,
 }
 
@@ -74,7 +74,7 @@ pub fn generate_tiles_and_rules(
     let mut id = 0;
     for prototype in prototypes.0.iter() {
         for &rotation in &prototype.y_rotations {
-            info!("New Tile: {} with rotation {:?}", prototype.name, rotation);
+            info!("New Tile {} : {} with rotation {:?}", id, prototype.name, rotation);
             let new_tile = Tile {
                 id: TileID(id),
                 asset_handle: prototype.asset_handle.clone(),
@@ -124,27 +124,33 @@ fn append_rule(
         let other_sock = other_prt.socket_from_dir(other_rot_dir);
         use Socket as S;
         match (sock, other_sock) {
-            (S::Nil, _) | (_, S::Nil) => (),
+            // (S::Nil, _) | (_, S::Nil) => (),
+            (S::Nil, S::Nil) => {
+                rule.from_dir_mut(dir).push(TileID(id));
+            },
+            (S::Nil, S::ToNil) | (S::ToNil, S::Nil) => {
+                rule.from_dir_mut(dir).push(TileID(id));
+            },
             (S::Sym(id0), S::Sym(id1)) if id0 == id1 => {
                 rule.from_dir_mut(dir).push(TileID(id));
-                info!(
-                    "new rule: {} with {:?} rotation connects to {} with {:?} rotation",
-                    prototype.name, rotation, other_prt.name, other_rotation
-                );
+                // info!(
+                //     "new rule: {} with {:?} rotation connects to {} with {:?} rotation",
+                //     prototype.name, rotation, other_prt.name, other_rotation
+                // );
             },
             (S::Asym(id0), S::AsymMir(id1)) | (S::AsymMir(id0), S::Asym(id1)) if id0 == id1 => {
                 rule.from_dir_mut(dir).push(TileID(id));
-                info!(
-                    "new rule: {} with {:?} rotation connects to {} with {:?} rotation",
-                    prototype.name, rotation, other_prt.name, other_rotation
-                );
+                // info!(
+                //     "new rule: {} with {:?} rotation connects to {} with {:?} rotation",
+                //     prototype.name, rotation, other_prt.name, other_rotation
+                // );
             }
             (S::Vert(id0), S::Vert(id1)) if id0 == id1 && rotation == other_rotation => {
                 rule.from_dir_mut(dir).push(TileID(id));
-                info!(
-                    "new rule: {} with {:?} rotation connects to {} with {:?} rotation",
-                    prototype.name, rotation, other_prt.name, other_rotation
-                );
+                // info!(
+                //     "new rule: {} with {:?} rotation connects to {} with {:?} rotation",
+                //     prototype.name, rotation, other_prt.name, other_rotation
+                // );
             }
             (_, _) => (),
         }

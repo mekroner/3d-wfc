@@ -78,7 +78,6 @@ impl Chunk {
 
 // Chunk Generatorion
 
-
 #[derive(Debug, Clone)]
 enum WaveState {
     Collapsed(TileID),

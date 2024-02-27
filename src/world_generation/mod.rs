@@ -13,9 +13,9 @@ use chunk::*;
 use prototype::*;
 use tile::*;
 
-pub const CHUNK_SIZE: usize = 16;
+pub const CHUNK_SIZE: usize = 3;
 pub const CHUNK_AREA: usize = CHUNK_SIZE * CHUNK_SIZE;
-pub const CHUNK_HIGHT: usize = 4;
+pub const CHUNK_HIGHT: usize = 3;
 pub const CHUNK_VOLUME: usize = CHUNK_AREA * CHUNK_HIGHT;
 pub const CHUNK_SPAWN_DISTANCE: i32 = 1;
 pub const TILE_SIZE: f32 = 1.0;
@@ -113,7 +113,9 @@ fn spawn_chunks(
                     let Some(tile) = tiles.0.get(tile_id) else {
                         continue;
                     };
-                    let handle = &tile.asset_handle;
+                    let Some(handle) = &tile.asset_handle else {
+                        continue;
+                    };
                     let gltf = assets_gltf.get(handle).expect("Asset should be loaded");
                     let transform = Transform {
                         translation: chunk.pos() + Vec3::new(x as f32, y as f32, z as f32),

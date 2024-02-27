@@ -24,6 +24,7 @@ fn main() {
         }))
         .add_plugins(FlyCamPlugin)
         .add_plugins(WorldGenerationPlugin)
+        .insert_resource(ClearColor(Color::hex("61adb0").unwrap()))
         .add_systems(Startup, setup)
         // .add_systems(Update, tie_focus_to_cam)
         // .add_systems(Update, draw_cursor)

@@ -95,7 +95,9 @@ fn spawn_rule_examples(
     let mut index = 0;
     for (id, rule) in rule_set.0.iter() {
         let tile = tiles.0.get(id).unwrap();
-        let handle = &tile.asset_handle;
+        let Some(handle) = &tile.asset_handle else {
+            continue;
+        };
         let gltf = assets_gltf.get(handle).expect("Asset should be loaded");
 
         for dir in Dir::iter() {
@@ -105,7 +107,9 @@ fn spawn_rule_examples(
                 let pos = Vec3::new(x * DISPLAY_AREA_SIZE, 0., z * DISPLAY_AREA_SIZE);
                 let other_pos = pos + dir.to_vec3() * TILE_SIZE;
                 let other_tile = tiles.0.get(other_id).unwrap();
-                let other_handle = &other_tile.asset_handle;
+                let Some(other_handle) = &other_tile.asset_handle else {
+                    continue;
+                };
                 let other_gltf = assets_gltf
                     .get(other_handle)
                     .expect("Asset should be loaded");
