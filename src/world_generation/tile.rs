@@ -2,6 +2,7 @@ use bevy::gltf::Gltf;
 use bevy::prelude::*;
 use bevy::utils::HashMap;
 use strum::IntoEnumIterator;
+use std::ops::Range;
 
 use crate::world_generation::Socket;
 
@@ -12,6 +13,7 @@ pub struct Tile {
     pub id: TileID,
     pub asset_handle: Option<Handle<Gltf>>,
     pub y_rotation: Rotation,
+    pub y_level: Option<Range<usize>>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -79,6 +81,7 @@ pub fn generate_tiles_and_rules(
                 id: TileID(id),
                 asset_handle: prototype.asset_handle.clone(),
                 y_rotation: rotation,
+                y_level: prototype.y_level.clone(),
             };
             tiles.0.insert(TileID(id), new_tile);
             let mut rule = AdjacencyRules {

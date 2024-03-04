@@ -13,9 +13,9 @@ use chunk::*;
 use prototype::*;
 use tile::*;
 
-pub const CHUNK_SIZE: usize = 3;
+pub const CHUNK_SIZE: usize = 32;
 pub const CHUNK_AREA: usize = CHUNK_SIZE * CHUNK_SIZE;
-pub const CHUNK_HIGHT: usize = 3;
+pub const CHUNK_HIGHT: usize = 8;
 pub const CHUNK_VOLUME: usize = CHUNK_AREA * CHUNK_HIGHT;
 pub const CHUNK_SPAWN_DISTANCE: i32 = 1;
 pub const TILE_SIZE: f32 = 1.0;
@@ -103,7 +103,7 @@ fn spawn_chunks(
         // let chunk = Chunk::new(id.clone(), Some(TileID(0)));
         let chunk = ChunkBuilder::new(id.clone())
             .add_rule_set(rule_set.clone())
-            .build();
+            .build(&tiles);
         for z in 0..CHUNK_SIZE {
             for x in 0..CHUNK_SIZE {
                 for y in 0..CHUNK_HIGHT {

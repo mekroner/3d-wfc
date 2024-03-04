@@ -1,7 +1,8 @@
 use std::fmt::Display;
+use std::ops::RangeBounds;
 
 use super::dir::Dir;
-use super::{AdjRuleSet, AdjacencyRules, TileID, CHUNK_HIGHT};
+use super::{AdjRuleSet, AdjacencyRules, Tile, TileID, Tiles, CHUNK_HIGHT};
 use super::{CHUNK_SIZE, CHUNK_VOLUME};
 use bevy::prelude::*;
 use bevy::utils::HashMap;
@@ -75,7 +76,6 @@ impl Chunk {
     }
 }
 
-
 // Chunk Generatorion
 
 #[derive(Debug, Clone)]
@@ -127,8 +127,8 @@ impl ChunkBuilder {
         self
     }
 
-    pub fn build(mut self) -> Chunk {
-        self.init();
+    pub fn build(mut self, tiles: &Tiles) -> Chunk {
+        self.init(tiles);
         while !self.is_collapsed() {
             if let Err(e) = self.iterate() {
                 error!("{}", e);
@@ -150,9 +150,28 @@ impl ChunkBuilder {
         Chunk { id: self.id, tiles }
     }
 
-    fn init(&mut self) {
-        let tiles: Vec<TileID> = self.rules.keys().cloned().collect();
-        self.wave = vec![WaveState::Superpos(tiles.clone()); CHUNK_VOLUME];
+    fn init(&mut self, tiles: &Tiles) {
+        self.wave = vec![WaveState::Superpos(vec![]); CHUNK_VOLUME];
+        for y in 0..CHUNK_HIGHT {
+            let ids: Vec<TileID> = self
+                .rules
+                .keys()
+                .filter(|&id| {
+                    let tile: &Tile = &tiles.0[id];
+                    let Some(ref range) = tile.y_level else {
+                        return true;
+                    };
+                    range.contains(&y)
+                })
+                .cloned()
+                .collect();
+            for x in 0..CHUNK_SIZE {
+                for z in 0..CHUNK_SIZE {
+                    let index = get_index(x,y,z);
+                    self.wave[index] = WaveState::Superpos(ids.clone());
+                }
+            }
+        }
     }
 
     // find superposition with lowest non zero entropy
