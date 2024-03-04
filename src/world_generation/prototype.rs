@@ -7,8 +7,8 @@ use super::dir::{Dir, Rotation};
 
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum Socket {
-    Nil,
-    ToNil,
+    Ground,
+    Air,
     Sym(u16),
     Asym(u16),
     AsymMir(u16),
@@ -57,8 +57,8 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         asset_handle: Some(ground),
         p_x: Socket::Sym(1),
         n_x: Socket::Sym(1),
-        p_y: Socket::ToNil,
-        n_y: Socket::ToNil,
+        p_y: Socket::Air,
+        n_y: Socket::Ground,
         p_z: Socket::Sym(1),
         n_z: Socket::Sym(1),
         frequency: 0,
@@ -68,10 +68,10 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
     let cliff_low_prt = Prototype {
         name: "cliff_low",
         asset_handle: Some(cliff_low),
-        p_x: Socket::ToNil,
+        p_x: Socket::Ground,
         n_x: Socket::Sym(1),
         p_y: Socket::Vert(2),
-        n_y: Socket::ToNil,
+        n_y: Socket::Ground,
         p_z: Socket::Asym(3),
         n_z: Socket::AsymMir(3),
         frequency: 0,
@@ -89,7 +89,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         p_x: Socket::Asym(3),
         n_x: Socket::Sym(1),
         p_y: Socket::Vert(3),
-        n_y: Socket::ToNil,
+        n_y: Socket::Ground,
         p_z: Socket::Sym(1),
         n_z: Socket::AsymMir(3),
         frequency: 0,
@@ -105,8 +105,8 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         name: "cliff_upper",
         asset_handle: Some(cliff_upper),
         p_x: Socket::Sym(1),
-        n_x: Socket::ToNil,
-        p_y: Socket::ToNil,
+        n_x: Socket::Air,
+        p_y: Socket::Air,
         n_y: Socket::Vert(2),
         p_z: Socket::Asym(4),
         n_z: Socket::AsymMir(4),
@@ -123,10 +123,10 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         name: "cliff_upper_corner",
         asset_handle: Some(cliff_upper_corner.clone()),
         p_x: Socket::Asym(4),
-        n_x: Socket::ToNil,
-        p_y: Socket::ToNil,
+        n_x: Socket::Air,
+        p_y: Socket::Air,
         n_y: Socket::Vert(3),
-        p_z: Socket::ToNil,
+        p_z: Socket::Air,
         n_z: Socket::AsymMir(4),
         frequency: 0,
         y_rotations: vec![
@@ -137,15 +137,28 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         ],
     };
 
-    let nil_prt = Prototype {
-        name: "nil",
+    let air_prt = Prototype {
+        name: "air",
         asset_handle: None,
-        p_x: Socket::Nil,
-        n_x: Socket::Nil,
-        p_y: Socket::Nil,
-        n_y: Socket::Nil,
-        p_z: Socket::Nil,
-        n_z: Socket::Nil,
+        p_x: Socket::Air,
+        n_x: Socket::Air,
+        p_y: Socket::Air,
+        n_y: Socket::Air,
+        p_z: Socket::Air,
+        n_z: Socket::Air,
+        frequency: 0,
+        y_rotations: vec![Rotation::Zero],
+    };
+
+    let dirt_prt = Prototype {
+        name: "dirt",
+        asset_handle: None,
+        p_x: Socket::Ground,
+        n_x: Socket::Ground,
+        p_y: Socket::Ground,
+        n_y: Socket::Ground,
+        p_z: Socket::Ground,
+        n_z: Socket::Ground,
         frequency: 0,
         y_rotations: vec![Rotation::Zero],
     };
@@ -156,7 +169,8 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         cliff_upper_prt,
         cliff_low_corner_prt,
         cliff_upper_corner_prt,
-        nil_prt,
+        air_prt,
+        dirt_prt,
     ];
     cmds.insert_resource(Prototypes(assets));
 }

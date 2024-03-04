@@ -125,10 +125,7 @@ fn append_rule(
         use Socket as S;
         match (sock, other_sock) {
             // (S::Nil, _) | (_, S::Nil) => (),
-            (S::Nil, S::Nil) => {
-                rule.from_dir_mut(dir).push(TileID(id));
-            },
-            (S::Nil, S::ToNil) | (S::ToNil, S::Nil) => {
+            (S::Air, S::Air) | (S::Ground, S::Ground) => {
                 rule.from_dir_mut(dir).push(TileID(id));
             },
             (S::Sym(id0), S::Sym(id1)) if id0 == id1 => {

@@ -28,6 +28,7 @@ fn main() {
                     ..default()
                 }),
         )
+        .insert_resource(ClearColor(Color::hex("61adb0").unwrap()))
         .insert_resource(SocketColors(HashMap::new()))
         .add_plugins(FlyCamPlugin)
         .add_state::<PLS>()
@@ -92,7 +93,8 @@ fn spawn_prototypes_in_grid(
 struct SocketColors(HashMap<Socket, Color>);
 
 fn determine_socket_color(prts: Res<Prototypes>, mut colors: ResMut<SocketColors>) {
-    colors.0.insert(Socket::Nil, Color::BLACK);
+    colors.0.insert(Socket::Ground, Color::BLACK);
+    colors.0.insert(Socket::Air, Color::YELLOW);
     for prt in prts.0.iter() {
         if !colors.0.contains_key(&prt.p_x) {
             colors.0.insert(prt.p_x, random_color());
