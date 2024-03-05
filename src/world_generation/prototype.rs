@@ -67,7 +67,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Ground,
         p_z: Socket::Sym(1),
         n_z: Socket::Sym(1),
-        weight: 4,
+        weight: 25,
         y_rotations: vec![Rotation::Zero],
         y_level: None,
     };
@@ -81,7 +81,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Ground,
         p_z: Socket::Asym(3),
         n_z: Socket::AsymMir(3),
-        weight: 1,
+        weight: 20,
         y_rotations: vec![
             Rotation::Zero,
             Rotation::Half,
@@ -119,7 +119,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Vert(2),
         p_z: Socket::Asym(4),
         n_z: Socket::AsymMir(4),
-        weight: 1,
+        weight: 20,
         y_rotations: vec![
             Rotation::Zero,
             Rotation::Half,
@@ -157,7 +157,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Air,
         p_z: Socket::Air,
         n_z: Socket::Air,
-        weight: 1,
+        weight: 4,
         y_rotations: vec![Rotation::Zero],
         y_level: Some(1..(CHUNK_HIGHT + 1)),
     };
@@ -171,7 +171,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Ground,
         p_z: Socket::Ground,
         n_z: Socket::Ground,
-        weight: 1,
+        weight: 20,
         y_rotations: vec![Rotation::Zero],
         y_level: Some(0..(CHUNK_HIGHT)),
     };

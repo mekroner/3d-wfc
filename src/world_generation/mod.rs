@@ -15,7 +15,7 @@ use tile::*;
 
 pub const CHUNK_SIZE: usize = 32;
 pub const CHUNK_AREA: usize = CHUNK_SIZE * CHUNK_SIZE;
-pub const CHUNK_HIGHT: usize = 8;
+pub const CHUNK_HIGHT: usize = 4;
 pub const CHUNK_VOLUME: usize = CHUNK_AREA * CHUNK_HIGHT;
 pub const CHUNK_SPAWN_DISTANCE: i32 = 1;
 pub const TILE_SIZE: f32 = 1.0;
