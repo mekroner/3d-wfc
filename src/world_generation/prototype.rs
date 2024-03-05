@@ -211,7 +211,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Ground,
         p_z: Socket::Ground,
         n_z: Socket::Ground,
-        weight: 4,
+        weight: 16,
         y_rotations: vec![Rotation::Zero],
         y_level: Some(0..(CHUNK_HIGHT)),
     };
