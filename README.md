@@ -1,3 +1,3 @@
-# Untitled Strategy Game.
+# 3D Wave Function Collapse.
 
-A game by me...
+An implementation of Wave Function Collapse Agorithm using 3d Tiles.
