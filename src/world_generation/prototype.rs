@@ -56,8 +56,10 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
     let ground = ass.load("models/terrain/ground.glb");
     let cliff_low = ass.load("models/terrain/cliff_low.glb");
     let cliff_low_corner = ass.load("models/terrain/cliff_low_corner.glb");
+    let cliff_low_corner2 = ass.load("models/terrain/cliff_low_corner2.glb");
     let cliff_upper = ass.load("models/terrain/cliff_upper.glb");
     let cliff_upper_corner = ass.load("models/terrain/cliff_upper_corner.glb");
+    let cliff_upper_corner2 = ass.load("models/terrain/cliff_upper_corner2.glb");
     let ground_prt = Prototype {
         name: "ground",
         asset_handle: Some(ground),
@@ -81,7 +83,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Ground,
         p_z: Socket::Asym(3),
         n_z: Socket::AsymMir(3),
-        weight: 20,
+        weight: 1,
         y_rotations: vec![
             Rotation::Zero,
             Rotation::Half,
@@ -110,6 +112,25 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         y_level: Some(0..(CHUNK_HIGHT)),
     };
 
+    let cliff_low_corner2_prt = Prototype {
+        name: "cliff_low_corner2",
+        asset_handle: Some(cliff_low_corner2),
+        p_x: Socket::Ground,
+        n_x: Socket::AsymMir(3),
+        p_y: Socket::Vert(4),
+        n_y: Socket::Ground,
+        p_z: Socket::Asym(3),
+        n_z: Socket::Ground,
+        weight: 1,
+        y_rotations: vec![
+            Rotation::Zero,
+            Rotation::Half,
+            Rotation::Quarter,
+            Rotation::ThreeQuarter,
+        ],
+        y_level: Some(0..(CHUNK_HIGHT)),
+    };
+
     let cliff_upper_prt = Prototype {
         name: "cliff_upper",
         asset_handle: Some(cliff_upper),
@@ -119,7 +140,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Vert(2),
         p_z: Socket::Asym(4),
         n_z: Socket::AsymMir(4),
-        weight: 20,
+        weight: 1,
         y_rotations: vec![
             Rotation::Zero,
             Rotation::Half,
@@ -138,6 +159,25 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Vert(3),
         p_z: Socket::Air,
         n_z: Socket::AsymMir(4),
+        weight: 1,
+        y_rotations: vec![
+            Rotation::Zero,
+            Rotation::Half,
+            Rotation::Quarter,
+            Rotation::ThreeQuarter,
+        ],
+        y_level: Some(1..(CHUNK_HIGHT + 1)),
+    };
+
+    let cliff_upper_corner2_prt = Prototype {
+        name: "cliff_upper_corner2",
+        asset_handle: Some(cliff_upper_corner2.clone()),
+        p_x: Socket::Sym(1),
+        n_x: Socket::AsymMir(4),
+        p_y: Socket::Air,
+        n_y: Socket::Vert(4),
+        p_z: Socket::Asym(4),
+        n_z: Socket::Sym(1),
         weight: 1,
         y_rotations: vec![
             Rotation::Zero,
@@ -171,7 +211,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Ground,
         p_z: Socket::Ground,
         n_z: Socket::Ground,
-        weight: 20,
+        weight: 4,
         y_rotations: vec![Rotation::Zero],
         y_level: Some(0..(CHUNK_HIGHT)),
     };
@@ -179,9 +219,11 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
     let assets = vec![
         ground_prt,
         cliff_low_prt,
-        cliff_upper_prt,
         cliff_low_corner_prt,
+        cliff_low_corner2_prt,
+        cliff_upper_prt,
         cliff_upper_corner_prt,
+        cliff_upper_corner2_prt,
         air_prt,
         dirt_prt,
     ];
