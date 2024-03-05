@@ -65,7 +65,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         p_z: Socket::Sym(1),
         n_z: Socket::Sym(1),
         frequency: 0,
-        y_rotations: vec![Rotation::Zero],
+        y_rotations: vec![Rotation::Zero, Rotation::Half, Rotation::Quarter, Rotation::ThreeQuarter],
         y_level: None,
     };
 
@@ -156,7 +156,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_z: Socket::Air,
         frequency: 0,
         y_rotations: vec![Rotation::Zero],
-        y_level: None,
+        y_level: Some(1..(CHUNK_HIGHT+1)),
     };
 
     let dirt_prt = Prototype {
@@ -170,7 +170,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_z: Socket::Ground,
         frequency: 0,
         y_rotations: vec![Rotation::Zero],
-        y_level: None,
+        y_level: Some(0..(CHUNK_HIGHT)),
     };
 
     let assets = vec![

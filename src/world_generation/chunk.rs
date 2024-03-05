@@ -133,12 +133,15 @@ impl ChunkBuilder {
 
     pub fn build(mut self, tiles: &Tiles) -> Chunk {
         self.init(tiles);
-        while !self.is_collapsed() {
-            if let Err(e) = self.iterate() {
-                error!("{}", e);
-                break;
-            }
+        if let Err(e) = self.branch() {
+            error!("{}", e);
         }
+        // while !self.is_collapsed() {
+        //     if let Err(e) = self.iterate() {
+        //         error!("{}", e);
+        //         break;
+        //     }
+        // }
 
         let mut tiles: Vec<Option<TileID>> = Vec::new();
         for wave_state in self.wave {
@@ -173,6 +176,14 @@ impl ChunkBuilder {
                 for z in 0..CHUNK_SIZE {
                     let index = get_index(x, y, z);
                     self.wave[index] = WaveState::Superpos(ids.clone());
+                }
+            }
+        }
+        for y in 0..CHUNK_HIGHT {
+            for x in 0..CHUNK_SIZE {
+                for z in 0..CHUNK_SIZE {
+                    let index = get_index(x, y, z);
+                    self.propagate(index);
                 }
             }
         }
@@ -252,7 +263,7 @@ impl ChunkBuilder {
     }
 
     fn branch(&mut self) -> Result<(), WaveError> {
-        info!("WFC: BRANCH");
+        // info!("WFC: BRANCH");
         if self.is_collapsed() {
             return Ok(());
         }
@@ -268,23 +279,32 @@ impl ChunkBuilder {
         else {
             return Err(WaveError("No lowest_entropy found"));
         };
-        let positions: Vec<usize> = vec![];
+
+        if min_ent == 0 {
+            return Err(WaveError("Lowest entropy cannot be zero!"));
+        }
+
+        let positions: Vec<usize> = self.wave.iter().enumerate().filter_map(|(i, state)| match state {
+            WaveState::Superpos(vec) if vec.len() == min_ent => Some(i),
+            _ => None,
+        }).collect();
 
         for pos in positions {
             let wave = self.wave.clone();
-            loop {
-                let tile = self.collapse(pos)?;
-                info!("WFC: Collapse {:?} {:?}", from_index(pos), tile);
-                let wave = self.wave.clone();
-                self.propagate(pos);
-                if !self.has_error() {
-                    break;
-                }
-                self.wave = wave;
+            let tile = self.collapse(pos)?;
+            // info!("WFC: Collapse {:?} {:?}", from_index(pos), tile);
+            self.propagate(pos);
+            if let Err(_) = self.branch() {
+                self.wave = wave.clone();
+                continue;
             }
+            if self.is_collapsed() {
+                return Ok(());
+            } 
+            self.wave = wave.clone();
         }
 
-        Ok(())
+        Err(WaveError("No solution found"))
     }
 
     fn iterate(&mut self) -> Result<(), WaveError> {
@@ -292,17 +312,9 @@ impl ChunkBuilder {
         let Some(pos) = self.lowest_entropy() else {
             return Err(WaveError("No element with lowest entropy found."));
         };
-
-        loop {
-            let tile = self.collapse(pos)?;
-            info!("WFC: Collapse {:?} {:?}", from_index(pos), tile);
-            let wave = self.wave.clone();
-            self.propagate(pos);
-            if !self.has_error() {
-                break;
-            }
-            self.wave = wave;
-        }
+        let tile = self.collapse(pos)?;
+        info!("WFC: Collapse {:?} {:?}", from_index(pos), tile);
+        self.propagate(pos);
 
         Ok(())
     }
@@ -345,17 +357,5 @@ impl ChunkBuilder {
             }
         }
         true
-    }
-
-    fn has_error(&self) -> bool {
-        for wave_state in &self.wave {
-            let WaveState::Superpos(vec) = wave_state else {
-                continue;
-            };
-            if vec.len() == 0 {
-                return true;
-            }
-        }
-        false
     }
 }

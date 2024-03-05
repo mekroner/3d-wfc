@@ -13,7 +13,7 @@ use chunk::*;
 use prototype::*;
 use tile::*;
 
-pub const CHUNK_SIZE: usize = 16;
+pub const CHUNK_SIZE: usize = 32;
 pub const CHUNK_AREA: usize = CHUNK_SIZE * CHUNK_SIZE;
 pub const CHUNK_HIGHT: usize = 8;
 pub const CHUNK_VOLUME: usize = CHUNK_AREA * CHUNK_HIGHT;
@@ -37,7 +37,8 @@ impl Plugin for WorldGenerationPlugin {
             .add_systems(OnEnter(PLS::Finished), generate_tiles_and_rules)
             .add_systems(Update, spawn_chunks.run_if(in_state(PLS::Finished)))
             // .add_systems(Update, world_gizmo)
-            .add_systems(Update, grid_gizmo);
+            // .add_systems(Update, grid_gizmo);
+        ;
     }
 }
 
