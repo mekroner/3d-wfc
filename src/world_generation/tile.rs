@@ -12,6 +12,7 @@ use super::{dir::Dir, dir::Rotation, Prototype, Prototypes};
 pub struct Tile {
     pub id: TileID,
     pub asset_handle: Option<Handle<Gltf>>,
+    pub weight: usize,
     pub y_rotation: Rotation,
     pub y_level: Option<Range<usize>>,
 }
@@ -80,6 +81,7 @@ pub fn generate_tiles_and_rules(
             let new_tile = Tile {
                 id: TileID(id),
                 asset_handle: prototype.asset_handle.clone(),
+                weight: prototype.weight,
                 y_rotation: rotation,
                 y_level: prototype.y_level.clone(),
             };

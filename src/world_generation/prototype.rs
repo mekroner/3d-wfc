@@ -5,7 +5,10 @@ use std::ops::Range;
 use bevy::gltf::Gltf;
 use bevy::prelude::*;
 
-use super::{dir::{Dir, Rotation}, CHUNK_HIGHT};
+use super::{
+    dir::{Dir, Rotation},
+    CHUNK_HIGHT,
+};
 
 #[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub enum Socket {
@@ -26,7 +29,7 @@ pub struct Prototype {
     pub p_z: Socket,
     pub n_z: Socket,
 
-    pub frequency: u32,
+    pub weight: usize,
 
     pub y_rotations: Vec<Rotation>,
     pub y_level: Option<Range<usize>>,
@@ -64,8 +67,8 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Ground,
         p_z: Socket::Sym(1),
         n_z: Socket::Sym(1),
-        frequency: 0,
-        y_rotations: vec![Rotation::Zero, Rotation::Half, Rotation::Quarter, Rotation::ThreeQuarter],
+        weight: 4,
+        y_rotations: vec![Rotation::Zero],
         y_level: None,
     };
 
@@ -78,7 +81,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Ground,
         p_z: Socket::Asym(3),
         n_z: Socket::AsymMir(3),
-        frequency: 0,
+        weight: 1,
         y_rotations: vec![
             Rotation::Zero,
             Rotation::Half,
@@ -97,7 +100,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Ground,
         p_z: Socket::Sym(1),
         n_z: Socket::AsymMir(3),
-        frequency: 0,
+        weight: 1,
         y_rotations: vec![
             Rotation::Zero,
             Rotation::Half,
@@ -116,14 +119,14 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Vert(2),
         p_z: Socket::Asym(4),
         n_z: Socket::AsymMir(4),
-        frequency: 0,
+        weight: 1,
         y_rotations: vec![
             Rotation::Zero,
             Rotation::Half,
             Rotation::Quarter,
             Rotation::ThreeQuarter,
         ],
-        y_level: Some(1..(CHUNK_HIGHT+1)),
+        y_level: Some(1..(CHUNK_HIGHT + 1)),
     };
 
     let cliff_upper_corner_prt = Prototype {
@@ -135,14 +138,14 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Vert(3),
         p_z: Socket::Air,
         n_z: Socket::AsymMir(4),
-        frequency: 0,
+        weight: 1,
         y_rotations: vec![
             Rotation::Zero,
             Rotation::Half,
             Rotation::Quarter,
             Rotation::ThreeQuarter,
         ],
-        y_level: Some(1..(CHUNK_HIGHT+1)),
+        y_level: Some(1..(CHUNK_HIGHT + 1)),
     };
 
     let air_prt = Prototype {
@@ -154,9 +157,9 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Air,
         p_z: Socket::Air,
         n_z: Socket::Air,
-        frequency: 0,
+        weight: 1,
         y_rotations: vec![Rotation::Zero],
-        y_level: Some(1..(CHUNK_HIGHT+1)),
+        y_level: Some(1..(CHUNK_HIGHT + 1)),
     };
 
     let dirt_prt = Prototype {
@@ -168,7 +171,7 @@ pub fn load_prototypes(mut cmds: Commands, ass: Res<AssetServer>) {
         n_y: Socket::Ground,
         p_z: Socket::Ground,
         n_z: Socket::Ground,
-        frequency: 0,
+        weight: 1,
         y_rotations: vec![Rotation::Zero],
         y_level: Some(0..(CHUNK_HIGHT)),
     };
